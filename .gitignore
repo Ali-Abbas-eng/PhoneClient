@@ -68,3 +68,4 @@ yarn-error.log
 /secret
 
 /android/app/my-upload-key.keystore
+/android/gradle.properties
