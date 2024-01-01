@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: com.android.tools.utp:android-device-provider-ddmlib-proto:30.4.2" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="com.android.tools.utp" artifactId="android-device-provider-ddmlib-proto" version="30.4.2" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.android.tools.utp/android-device-provider-ddmlib-proto/30.4.2/7e8d418bf45f4f9f8cc1708429aa996d34b938b2/android-device-provider-ddmlib-proto-30.4.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.android.tools.utp/android-device-provider-ddmlib-proto/30.4.2/5652975ea1dad53112ab281173cff9e25598537f/android-device-provider-ddmlib-proto-30.4.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

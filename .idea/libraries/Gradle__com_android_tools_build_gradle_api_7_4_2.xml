@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: com.android.tools.build:gradle-api:7.4.2" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="com.android.tools.build" artifactId="gradle-api" version="7.4.2" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.android.tools.build/gradle-api/7.4.2/5f81693f719b0472898c69dafb42befbb18de887/gradle-api-7.4.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.android.tools.build/gradle-api/7.4.2/6d8a7bc41323282f5aebbd98e8bf786bf16757c9/gradle-api-7.4.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
