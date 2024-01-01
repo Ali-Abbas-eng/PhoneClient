@@ -63,3 +63,6 @@ yarn-error.log
 
 # testing
 /coverage
+
+# Secret Information
+/secret
