@@ -66,3 +66,5 @@ yarn-error.log
 
 # Secret Information
 /secret
+
+/android/app/my-upload-key.keystore
