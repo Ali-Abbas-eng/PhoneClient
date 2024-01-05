@@ -1,4 +1,4 @@
-image: node:20.10.0
+image: reactnativecommunity/react-native-android
 
 pipelines:
   default:
@@ -7,8 +7,6 @@ pipelines:
         caches:
           - node
         script:
-          - apt-get update
-          - apt-get install -y default-jdk
           - npm install
           - mkdir -p android/app/src/main/assets
           - npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
