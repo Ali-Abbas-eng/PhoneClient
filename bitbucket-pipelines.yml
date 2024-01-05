@@ -6,6 +6,7 @@ pipelines:
         name: Install and Build
         caches:
           - node
+        size: 2x # Use a larger container for this step.
         script:
           - npm install
           - mkdir -p android/app/src/main/assets
