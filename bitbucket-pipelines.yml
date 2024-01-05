@@ -10,4 +10,7 @@ pipelines:
           - npm install
           - mkdir -p android/app/src/main/assets
           - npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
+          - apt-get update && apt-get install -y openjdk-11-jdk
+          - export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+          - export PATH=$PATH:$JAVA_HOME/bin
           - cd android && ./gradlew assembleRelease
