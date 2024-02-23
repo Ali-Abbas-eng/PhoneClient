@@ -4,9 +4,6 @@ pipelines:
   default:
     - step:
         name: Install and Build
-        caches:
-          - node
-        size: 2x # Use a larger container for this step.
         script:
           - echo "This will run on every push except for the 'release' branch"
   branches:
