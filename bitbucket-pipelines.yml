@@ -8,4 +8,13 @@ pipelines:
           - node
         size: 2x # Use a larger container for this step.
         script:
-          - ./build.sh
+          - echo "This will run on every push except for the 'release' branch"
+  branches:
+    release:
+      - step:
+          name: Install and Build on Release
+          caches:
+            - node
+          size: 2x
+          script:
+            - ./build.sh
