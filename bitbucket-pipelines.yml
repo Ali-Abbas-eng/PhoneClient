@@ -5,11 +5,11 @@ pipelines:
     - step:
         name: Install and Build
         script:
-          - echo "This will run on every push except for the 'release' branch"
-  branches:
-    release:
+          - echo "Non 'release' commit, no build sequence will be activated."
+  tags:
+    release/*:
       - step:
-          name: Install and Build on Release
+          name: Install and Build on Release Tag
           caches:
             - node
           size: 2x
