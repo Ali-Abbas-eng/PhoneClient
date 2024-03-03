@@ -1,37 +1,34 @@
-import React from 'react';
-import {SafeAreaView, StyleSheet, Text, useColorScheme} from 'react-native';
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ *
+ * @format
+ */
 
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+import React from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {HomeScreen} from './src/screens/HomeScreen.tsx';
+import {RegisterScreen} from './src/screens/RegisterScreen.tsx';
+import {LoginScreen} from './src/screens/LoginScreen.tsx';
+import {
+  HomeScreenName,
+  LoginScreenName,
+  RegisterScreenName,
+} from './src/constants.tsx';
+
+const Stack = createNativeStackNavigator();
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
   return (
-    <SafeAreaView style={[styles.centeredView, backgroundStyle]}>
-      <Text style={styles.highlight}>
-        Sorry, This App is not available in your region due to the OFAC
-        restriction that prohibit Syrian companies from accessing international
-        services such as web hosting and AI cloud services, so we can only scale
-        up a bit at a time, we sincerely apologise for the inconvenience.
-      </Text>
-    </SafeAreaView>
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name={RegisterScreenName} component={RegisterScreen} />
+        <Stack.Screen name={LoginScreenName} component={LoginScreen} />
+        <Stack.Screen name={HomeScreenName} component={HomeScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  highlight: {
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-});
 
 export default App;
