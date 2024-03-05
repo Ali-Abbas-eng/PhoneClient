@@ -1,6 +1,7 @@
 export const HomeScreenName = 'Home';
 export const LoginScreenName = 'Login';
 export const RegisterScreenName = 'Register';
+export const ProfileScreenName = 'Profile';
 
 export const HttpProtocol = 'http:';
 export const WsProtocol = 'ws:';
