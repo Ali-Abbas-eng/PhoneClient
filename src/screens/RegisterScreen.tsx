@@ -9,13 +9,11 @@ import {
 } from 'react-native';
 import {styles} from '../styles/styels.tsx';
 import {HomeScreenName, LoginScreenName} from '../constants.tsx';
-import {__handleSignUp} from '../utils/AccountsLogic.tsx';
-import {notifyMessage} from '../utils/informationValidators.tsx';
+import { __handleServerAccessError, __handleSignUp } from "../utils/AccountsLogic.tsx";
 import {useNavigation} from '@react-navigation/native';
 
 export const RegisterScreen = () => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -24,8 +22,7 @@ export const RegisterScreen = () => {
 
   const handleSignUp = () => {
     __handleSignUp(
-      firstName,
-      lastName,
+      name,
       email,
       password,
       confirmPassword,
@@ -39,7 +36,7 @@ export const RegisterScreen = () => {
         });
       })
       .catch(error => {
-        notifyMessage(error.toString());
+        __handleServerAccessError(error);
       });
   };
 
@@ -53,18 +50,9 @@ export const RegisterScreen = () => {
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="First Name"
-          value={firstName}
+          value={name}
           onChangeText={text => {
-            setFirstName(text);
-          }}
-          style={styles.input}
-        />
-
-        <TextInput
-          placeholder="Last Name"
-          value={lastName}
-          onChangeText={text => {
-            setLastName(text);
+            setName(text);
           }}
           style={styles.input}
         />

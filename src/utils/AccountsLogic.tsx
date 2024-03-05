@@ -1,5 +1,7 @@
 import axios from 'axios';
 import {validatePassword} from './informationValidators.tsx';
+import {LoginEndpoint, RegisterEndpoint} from '../constants.tsx';
+import {Alert} from 'react-native';
 
 interface AxiosError {
   response?: {
@@ -13,22 +15,24 @@ interface AxiosError {
 
 export const __handleLogIn = async (email: string, password: string) => {
   try {
-    const response = await axios.post('http://10.0.2.2:8000/api/v1/login/', {
-      email,
-      password,
-    });
-
+    const data = {
+      email: email,
+      password: password,
+    };
+    console.log('Authentication JSON: ', data);
+    console.log('Authentication URL : ', LoginEndpoint);
+    const response = await axios.post(LoginEndpoint, data);
     if (response.status === 200) {
-      return response.data;
+      console.log('Data: ', response.data);
+      return {data: response.data};
     }
   } catch (error: unknown) {
-    __handleServerAccessError(error);
+    return {error: __handleServerAccessError(error)};
   }
 };
 
 export const __handleSignUp = async (
-  firstName: string,
-  lastName: string,
+  name: string,
   email: string,
   password: string,
   confirmPassword: string,
@@ -40,9 +44,9 @@ export const __handleSignUp = async (
   }
 
   try {
-    const response = await axios.post('http://10.0.2.2:8000/api/v1/register/', {
-      first_name: firstName,
-      last_name: lastName,
+    const response = await axios.post(RegisterEndpoint, {
+      first_name: name,
+      last_name: name,
       email: email,
       phone_number: phoneNumber,
       password1: password,
@@ -52,23 +56,34 @@ export const __handleSignUp = async (
     if (response.status === 201) {
       return response.data;
     }
+    return false;
   } catch (error: unknown) {
     __handleServerAccessError(error);
   }
 };
 
-const __handleServerAccessError = (error: unknown) => {
+export const __handleServerAccessError = (error: unknown) => {
   const axiosError = error as AxiosError;
+  let errorMessage = '';
+
   if (axiosError.response) {
     console.log(axiosError.response.data);
     console.log(axiosError.response.status);
     console.log(axiosError.response.headers);
-    throw new Error(axiosError.response.data);
+    errorMessage = axiosError.response.data;
   } else if (axiosError.request) {
     console.log(axiosError.request);
-    throw new Error('No response received from server.');
+    errorMessage = 'No response received from server.';
   } else {
     console.log('Error', axiosError.message);
-    throw new Error(axiosError.message);
+    errorMessage = axiosError.message;
   }
+
+  Alert.alert(
+    'Error',
+    errorMessage,
+    [{text: 'OK', onPress: () => console.log('OK Pressed')}],
+    {cancelable: false},
+  );
+  return errorMessage;
 };

@@ -6,42 +6,40 @@ import {
   TouchableOpacity,
   View,
   Image,
+  Alert,
 } from 'react-native';
 import {styles} from '../styles/styels.tsx';
-import {ToastAndroid, Platform} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import {HomeScreenName, RegisterScreenName} from '../constants.tsx';
 import {__handleLogIn} from '../utils/AccountsLogic.tsx';
-function notifyMessage(msg: string | null) {
-  if (Platform.OS === 'android') {
-    ToastAndroid.show(msg ? msg : '', ToastAndroid.SHORT);
-  } else {
-  }
-}
 
 export const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
   const handleLogin = async () => {
-    __handleLogIn(email, password)
-      .then(() => {
-        navigation.reset({
-          index: 0,
-          // @ts-ignore
-          routes: [{name: HomeScreenName}],
-        });
-      })
-      .catch(error => {
-        notifyMessage(error.toString());
+    const result = await __handleLogIn(email, password);
+    if (result?.hasOwnProperty('data') && result.data) {
+      navigation.reset({
+        index: 0,
+        // @ts-ignore
+        routes: [{name: HomeScreenName}],
       });
+    } else if (result?.hasOwnProperty('error')) {
+      Alert.alert(
+        'Error',
+        result.error,
+        [{text: 'OK', onPress: () => console.log('OK Pressed')}],
+        {cancelable: false},
+      );
+    }
   };
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
       <Image
         style={styles.logo}
-        source={require('../../assets/app_logo.png')}
+        source={require('../../assets/logo_no_background.png')}
       />
       <View style={styles.inputContainer}>
         <TextInput
