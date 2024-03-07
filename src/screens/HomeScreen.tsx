@@ -1,72 +1,118 @@
 // screens/HomeScreen.tsx
-import React, {useState} from 'react';
-import {View, Text, TouchableOpacity} from 'react-native';
-import {SelectSession} from '../components/Selector';
-import {ControlButtons} from '../components/ControlButton';
-import { ChatSocketURL, ProfileScreenName } from "../constants";
-import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-import {createWebSocketConnection} from '../utils/WebSocketManager';
-import {styles} from '../styles/styels.tsx';
-import { useNavigation } from "@react-navigation/native";
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  ScrollView,
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+  RefreshControl,
+} from 'react-native';
+import {SessionCard} from '../components/SessionCard';
+import {GetSessionsListEndpoint} from '../constants.tsx';
+import {StackNavigationProp} from '@react-navigation/stack';
 
-export function HomeScreen() {
-  const [sessionType, setSessionType] = useState('general_english');
-  const [isRecording, setIsRecording] = useState(false);
-  const [chatSocket, setChatSocket] = useState<WebSocket | null>(null);
-  const [recordedChunks, setRecordedChunks] = useState<string[]>([]);
-  const audioRecorderPlayer = new AudioRecorderPlayer();
-  const navigation = useNavigation();
-  const handleStart = () => {
-    const socket = createWebSocketConnection(
-      `${ChatSocketURL}${sessionType}`,
-      setIsRecording,
-      audioRecorderPlayer,
+export interface Session {
+  id: number;
+  socket_url: string;
+  name: string;
+  description: string;
+  number_of_messages: number;
+  image: string;
+}
+
+// define the type of the navigation prop
+type HomeScreenNavigationProp = StackNavigationProp<
+  // the first argument is an object that maps the name of each screen to the parameters it can receive
+  {
+    Home: undefined; // the home screen does not receive any parameters
+    Session: {session: Session}; // the session screen receives a session object as a parameter
+  },
+  'Home' // the second argument is the name of the current screen
+>;
+
+// define the type of the props for the HomeScreen component
+type HomeScreenProps = {
+  navigation: HomeScreenNavigationProp; // the navigation prop is of type HomeScreenNavigationProp
+};
+export function HomeScreen({navigation}: HomeScreenProps) {
+  // navigation is a prop passed by react navigation
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // add a state to indicate whether the refresh is active
+  const fetchSessions = () => {
+    setLoading(true);
+    setRefreshing(true);
+
+    // fetch the list of sessions from the endpoint
+    fetch(GetSessionsListEndpoint, {
+      method: 'POST',
+      // add any headers or body if needed
+    })
+      .then(response => response.json())
+      .then(data => {
+        // data is the list of sessions
+        setSessions(data);
+        setLoading(false);
+        setRefreshing(false);
+      })
+      .catch(error => {
+        // handle any error
+        console.error(error);
+        setLoading(false);
+        setRefreshing(false);
+      });
+  };
+  // define the onRefresh function that will be called when refresh starts
+  const onRefresh = () => {
+    // call the fetchSessions function when the screen is reloaded
+    fetchSessions();
+  };
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+  if (loading) {
+    // show a loading indicator while fetching the data
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
     );
-    setChatSocket(socket);
-    // @ts-ignore
-    socket.send(JSON.stringify({message: 'hello'}));
-  };
-
-  const handleRecord = () => {
-    audioRecorderPlayer.startRecorder().then((path: string) => {
-      console.log(`started recorder at path: ${path}`);
-      setIsRecording(true);
-      setRecordedChunks(prevChunks => [...prevChunks, path]);
-    });
-  };
-
-  const handleStop = () => {
-    audioRecorderPlayer.stopRecorder().then(() => {
-      console.log('stopped recording');
-      setIsRecording(false);
-    });
-  };
-
-  const handlePlay = () => {
-    recordedChunks.forEach(path => {
-      audioRecorderPlayer.startPlayer(path);
-    });
-  };
+  }
 
   return (
-    <View>
-      <Text>Hello, Welcome to Echo Speaking Partner</Text>
-      <TouchableOpacity
-        onPress={() => {
-          //@ts-ignore
-          navigation.navigate(ProfileScreenName);
-        }}
-        style={[styles.button, styles.buttonOutline]}>
-        <Text style={styles.buttonOutlineText}>Profile</Text>
-      </TouchableOpacity>
-      <SelectSession onValueChange={setSessionType} />
-      <ControlButtons
-        onStart={handleStart}
-        onRecord={handleRecord}
-        onStop={handleStop}
-        onPlay={handlePlay}
-        isRecording={isRecording}
-      />
-    </View>
+    // use the RefreshControl component to add pull-to-refresh functionality
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing} // pass the refreshing state as the refreshing prop
+          onRefresh={onRefresh} // pass the onRefresh function as the onRefresh prop
+        />
+      }>
+      {sessions.map(session => (
+        // wrap the session card in a touchable component
+        <TouchableOpacity
+          key={session.id}
+          onPress={() => {
+            // navigate to the session screen and pass the session object
+            navigation.navigate('Session', {session});
+          }}>
+          <SessionCard session={session} />
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f0f0f0',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

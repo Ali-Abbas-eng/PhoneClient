@@ -16,8 +16,10 @@ import {
   LoginScreenName,
   ProfileScreenName,
   RegisterScreenName,
+  SessionScreenName,
 } from './src/constants.tsx';
 import {ProfileScreen} from './src/screens/ProfileScreen.tsx';
+import {SessionScreen} from './src/screens/SessionScreen.tsx';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,10 +27,11 @@ function App(): React.JSX.Element {
   return (
     <NavigationContainer>
       <Stack.Navigator>
+        <Stack.Screen name={HomeScreenName} component={HomeScreen} />
         <Stack.Screen name={ProfileScreenName} component={ProfileScreen} />
         <Stack.Screen name={LoginScreenName} component={LoginScreen} />
         <Stack.Screen name={RegisterScreenName} component={RegisterScreen} />
-        <Stack.Screen name={HomeScreenName} component={HomeScreen} />
+        <Stack.Screen name={SessionScreenName} component={SessionScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
