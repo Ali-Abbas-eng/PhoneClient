@@ -28,8 +28,8 @@ function App(): React.JSX.Element {
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen name={HomeScreenName} component={HomeScreen} />
-        <Stack.Screen name={ProfileScreenName} component={ProfileScreen} />
         <Stack.Screen name={LoginScreenName} component={LoginScreen} />
+        <Stack.Screen name={ProfileScreenName} component={ProfileScreen} />
         <Stack.Screen name={RegisterScreenName} component={RegisterScreen} />
         <Stack.Screen name={SessionScreenName} component={SessionScreen} />
       </Stack.Navigator>

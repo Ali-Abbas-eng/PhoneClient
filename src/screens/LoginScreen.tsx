@@ -11,27 +11,22 @@ import {
 import {styles} from '../styles/styels.tsx';
 import {useNavigation} from '@react-navigation/native';
 import {HomeScreenName, RegisterScreenName} from '../constants.tsx';
-import {__handleLogIn} from '../utils/AccountsLogic.tsx';
+import {__handleLogin} from '../utils/AccountsLogic.tsx';
 
 export const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
+
   const handleLogin = async () => {
-    const result = await __handleLogIn(email, password);
-    if (result?.hasOwnProperty('data') && result.data) {
+    const result = await __handleLogin(email, password);
+    if (result.access_granted) {
+      // Use the tokens in your API calls
       navigation.reset({
         index: 0,
         // @ts-ignore
         routes: [{name: HomeScreenName}],
       });
-    } else if (result?.hasOwnProperty('error')) {
-      Alert.alert(
-        'Error',
-        result.error,
-        [{text: 'OK', onPress: () => console.log('OK Pressed')}],
-        {cancelable: false},
-      );
     }
   };
 
