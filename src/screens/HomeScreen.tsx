@@ -18,7 +18,8 @@ export interface Session {
   name: string;
   description: string;
   number_of_messages: number;
-  image: string;
+  image_url: string;
+  background_url: string;
 }
 
 // define the type of the navigation prop
