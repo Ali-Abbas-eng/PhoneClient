@@ -9,8 +9,10 @@ import {
   RefreshControl,
 } from 'react-native';
 import {SessionCard} from '../components/SessionCard';
-import {GetSessionsListEndpoint} from '../constants.tsx';
+import {GetSessionsListEndpoint, LoginScreenName} from '../constants.tsx';
 import {StackNavigationProp} from '@react-navigation/stack';
+import api from '../utils/APICaller.tsx';
+import {__tokenAuthentication} from '../utils/AccountsLogic.tsx';
 
 export interface Session {
   id: number;
@@ -41,19 +43,29 @@ export function HomeScreen({navigation}: HomeScreenProps) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false); // add a state to indicate whether the refresh is active
+  // @ts-ignore
+  const [authenticated, setAuthenticated] = useState(false);
+
+  const checkAuthentication = async () => {
+    const auth = await __tokenAuthentication();
+    setAuthenticated(auth);
+    if (authenticated) {
+    } else {
+      // @ts-ignore
+      navigation.navigate(LoginScreenName);
+    }
+  };
+  checkAuthentication();
+
   const fetchSessions = () => {
     setLoading(true);
     setRefreshing(true);
 
-    // fetch the list of sessions from the endpoint
-    fetch(GetSessionsListEndpoint, {
-      method: 'POST',
-      // add any headers or body if needed
-    })
-      .then(response => response.json())
-      .then(data => {
+    api
+      .get(GetSessionsListEndpoint)
+      .then(response => {
         // data is the list of sessions
-        setSessions(data);
+        setSessions(response.data);
         setLoading(false);
         setRefreshing(false);
       })

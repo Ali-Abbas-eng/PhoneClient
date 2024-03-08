@@ -1,6 +1,11 @@
 import axios from 'axios';
 import {validatePassword} from './informationValidators.tsx';
-import {LoginEndpoint, RegisterEndpoint} from '../constants.tsx';
+import {
+  LoginAPITokenEndpoint,
+  RegisterEndpoint,
+  ServerEndpoint,
+} from '../constants.tsx';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Alert} from 'react-native';
 
 interface AxiosError {
@@ -13,21 +18,45 @@ interface AxiosError {
   message: string;
 }
 
-export const __handleLogIn = async (email: string, password: string) => {
+export const storeTokens = async (access: string, refresh: string) => {
   try {
-    const data = {
-      email: email,
+    await AsyncStorage.setItem('access', access);
+    await AsyncStorage.setItem('refresh', refresh);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const getTokens = async () => {
+  try {
+    const access = await AsyncStorage.getItem('access');
+    const refresh = await AsyncStorage.getItem('refresh');
+    return {access, refresh};
+  } catch (error) {
+    console.error(error);
+    return {access: '', refresh: ''};
+  }
+};
+
+export const __tokenAuthentication = async () => {
+  // Try to get the tokens from AsyncStorage
+  const tokens = await getTokens();
+
+  // If the tokens exist, return them
+  return !!(tokens.access && tokens.refresh);
+};
+export const __handleLogin = async (email: string, password: string) => {
+  try {
+    const response = await axios.post(LoginAPITokenEndpoint, {
+      username: email,
       password: password,
-    };
-    console.log('Authentication JSON: ', data);
-    console.log('Authentication URL : ', LoginEndpoint);
-    const response = await axios.post(LoginEndpoint, data);
-    if (response.status === 200) {
-      console.log('Data: ', response.data);
-      return {data: response.data};
-    }
-  } catch (error: unknown) {
-    return {error: __handleServerAccessError(error)};
+    });
+    // Save the tokens in your state or in AsyncStorage
+    const {access, refresh} = response.data;
+    await storeTokens(access, refresh);
+    return {access_granted: true};
+  } catch (error) {
+    return {access_granted: true, error: __handleServerAccessError(error)};
   }
 };
 
@@ -64,24 +93,21 @@ export const __handleSignUp = async (
 
 export const __handleServerAccessError = (error: unknown) => {
   const axiosError = error as AxiosError;
-  let errorMessage = '';
+  let errorMessage;
 
   if (axiosError.response) {
-    console.log(axiosError.response.data);
-    console.log(axiosError.response.status);
-    console.log(axiosError.response.headers);
     errorMessage = axiosError.response.data;
   } else if (axiosError.request) {
-    console.log(axiosError.request);
     errorMessage = 'No response received from server.';
   } else {
-    console.log('Error', axiosError.message);
     errorMessage = axiosError.message;
   }
 
   Alert.alert(
     'Error',
-    errorMessage,
+    errorMessage.hasOwnProperty('detail')
+      ? errorMessage.detail
+      : 'Unknown Error',
     [{text: 'OK', onPress: () => console.log('OK Pressed')}],
     {cancelable: false},
   );
