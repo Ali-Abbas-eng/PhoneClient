@@ -1,6 +1,6 @@
 // SelectSession.tsx
 import React from 'react';
-import {Picker} from '@react-native-picker/picker';
+import { Picker } from '@react-native-picker/picker';
 
 interface SelectSessionProps {
   onValueChange: (itemValue: string, itemIndex: number) => void;

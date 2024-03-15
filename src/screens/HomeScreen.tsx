@@ -1,5 +1,5 @@
 // screens/HomeScreen.tsx
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
@@ -8,11 +8,11 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
-import {SessionCard} from '../components/SessionCard';
-import {GetSessionsListEndpoint, LoginScreenName} from '../constants.tsx';
-import {StackNavigationProp} from '@react-navigation/stack';
+import { SessionCard } from '../components/SessionCard';
+import { GetSessionsListEndpoint, LoginScreenName } from '../constants.tsx';
+import { StackNavigationProp } from '@react-navigation/stack';
 import api from '../utils/APICaller.tsx';
-import {__tokenAuthentication} from '../utils/AccountsLogic.tsx';
+import { __tokenAuthentication } from '../utils/AccountsLogic.tsx';
 
 export interface Session {
   id: number;
@@ -29,7 +29,7 @@ type HomeScreenNavigationProp = StackNavigationProp<
   // the first argument is an object that maps the name of each screen to the parameters it can receive
   {
     Home: undefined; // the home screen does not receive any parameters
-    Session: {session: Session}; // the session screen receives a session object as a parameter
+    Session: { session: Session }; // the session screen receives a session object as a parameter
   },
   'Home' // the second argument is the name of the current screen
 >;
@@ -38,7 +38,7 @@ type HomeScreenNavigationProp = StackNavigationProp<
 type HomeScreenProps = {
   navigation: HomeScreenNavigationProp; // the navigation prop is of type HomeScreenNavigationProp
 };
-export function HomeScreen({navigation}: HomeScreenProps) {
+export function HomeScreen({ navigation }: HomeScreenProps) {
   // navigation is a prop passed by react navigation
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,7 +109,7 @@ export function HomeScreen({navigation}: HomeScreenProps) {
           key={session.id}
           onPress={() => {
             // navigate to the session screen and pass the session object
-            navigation.navigate('Session', {session});
+            navigation.navigate('Session', { session });
           }}>
           <SessionCard session={session} />
         </TouchableOpacity>

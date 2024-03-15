@@ -1,6 +1,6 @@
 // ControlButtons.tsx
 import React from 'react';
-import {Button, View} from 'react-native';
+import { Button, View } from 'react-native';
 
 interface ControlButtonsProps {
   onStart: () => void;

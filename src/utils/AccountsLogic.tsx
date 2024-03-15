@@ -1,12 +1,12 @@
 import axios from 'axios';
-import {validatePassword} from './informationValidators.tsx';
+import { validatePassword } from './informationValidators.tsx';
 import {
   LoginAPITokenEndpoint,
   RegisterEndpoint,
   ServerEndpoint,
 } from '../constants.tsx';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Alert} from 'react-native';
+import { Alert } from 'react-native';
 
 interface AxiosError {
   response?: {
@@ -31,10 +31,10 @@ export const getTokens = async () => {
   try {
     const access = await AsyncStorage.getItem('access');
     const refresh = await AsyncStorage.getItem('refresh');
-    return {access, refresh};
+    return { access, refresh };
   } catch (error) {
     console.error(error);
-    return {access: '', refresh: ''};
+    return { access: '', refresh: '' };
   }
 };
 
@@ -52,11 +52,11 @@ export const __handleLogin = async (email: string, password: string) => {
       password: password,
     });
     // Save the tokens in your state or in AsyncStorage
-    const {access, refresh} = response.data;
+    const { access, refresh } = response.data;
     await storeTokens(access, refresh);
-    return {access_granted: true};
+    return { access_granted: true };
   } catch (error) {
-    return {access_granted: true, error: __handleServerAccessError(error)};
+    return { access_granted: true, error: __handleServerAccessError(error) };
   }
 };
 
@@ -108,8 +108,8 @@ export const __handleServerAccessError = (error: unknown) => {
     errorMessage.hasOwnProperty('detail')
       ? errorMessage.detail
       : 'Unknown Error',
-    [{text: 'OK', onPress: () => console.log('OK Pressed')}],
-    {cancelable: false},
+    [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+    { cancelable: false },
   );
   return errorMessage;
 };

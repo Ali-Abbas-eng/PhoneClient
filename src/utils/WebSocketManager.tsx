@@ -13,9 +13,9 @@ export function createWebSocketConnection(
   console.log(url);
   socket.onopen = function () {
     console.log('Open');
-    socket.send(JSON.stringify({start: 1})); // Send an empty message
+    socket.send(JSON.stringify({ start: 1 })); // Send an empty message
   };
-  socket.onmessage = function (event: {data: string}) {
+  socket.onmessage = function (event: { data: string }) {
     let data = JSON.parse(event.data);
     console.log('Data: ', data);
     if (data.audio) {

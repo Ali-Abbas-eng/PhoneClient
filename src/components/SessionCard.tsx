@@ -1,19 +1,22 @@
 // components/SessionCard.tsx
 import React from 'react';
-import {View, Text, Image, StyleSheet} from 'react-native';
-import {Session} from '../screens/HomeScreen.tsx';
+import { View, Text, Image, StyleSheet } from 'react-native';
+import { Session } from '../screens/HomeScreen.tsx';
 
 type SessionCardProps = {
   session: Session;
 };
 
-export function SessionCard({session}: SessionCardProps) {
+export function SessionCard({ session }: SessionCardProps) {
   // session is an object from the list
   return (
     <View style={styles.card}>
-      <Image source={{uri: session.background_url}} style={styles.background} />
+      <Image
+        source={{ uri: session.background_url }}
+        style={styles.background}
+      />
       <View style={styles.overlay}>
-        <Image source={{uri: session.image_url}} style={styles.image} />
+        <Image source={{ uri: session.image_url }} style={styles.image} />
         <View style={styles.content}>
           <Text style={styles.name}>{session.name}</Text>
           <Text style={styles.description}>{session.description}</Text>

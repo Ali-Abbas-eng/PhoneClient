@@ -1,6 +1,6 @@
 import axios from 'axios';
-import {getTokens} from './AccountsLogic.tsx';
-import {ServerEndpoint} from '../constants.tsx';
+import { getTokens } from './AccountsLogic.tsx';
+import { ServerEndpoint } from '../constants.tsx';
 
 const api = axios.create({
   baseURL: ServerEndpoint,
@@ -8,7 +8,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
   async config => {
-    const {access} = await getTokens();
+    const { access } = await getTokens();
     config.headers.Authorization = `Bearer ${access}`;
     return config;
   },

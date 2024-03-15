@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {View, Text, Image, TouchableOpacity} from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 
 export const ProfileScreen = () => {
@@ -39,7 +39,7 @@ export const ProfileScreen = () => {
               style={styles.profileImage}
               source={
                 image
-                  ? {uri: image}
+                  ? { uri: image }
                   : require('../../assets/default_profile.png')
               }
             />
@@ -58,7 +58,7 @@ export const ProfileScreen = () => {
   );
 };
 
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {

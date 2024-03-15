@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Text,
@@ -8,10 +8,10 @@ import {
   Image,
   Alert,
 } from 'react-native';
-import {styles} from '../styles/styels.tsx';
-import {useNavigation} from '@react-navigation/native';
-import {HomeScreenName, RegisterScreenName} from '../constants.tsx';
-import {__handleLogin} from '../utils/AccountsLogic.tsx';
+import { styles } from '../styles/styels.tsx';
+import { useNavigation } from '@react-navigation/native';
+import { HomeScreenName, RegisterScreenName } from '../constants.tsx';
+import { __handleLogin } from '../utils/AccountsLogic.tsx';
 
 export const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -25,7 +25,7 @@ export const LoginScreen = () => {
       navigation.reset({
         index: 0,
         // @ts-ignore
-        routes: [{name: HomeScreenName}],
+        routes: [{ name: HomeScreenName }],
       });
     }
   };

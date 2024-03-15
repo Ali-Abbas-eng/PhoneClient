@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Text,
@@ -7,13 +7,13 @@ import {
   View,
   Image,
 } from 'react-native';
-import {styles} from '../styles/styels.tsx';
-import {HomeScreenName, LoginScreenName} from '../constants.tsx';
+import { styles } from '../styles/styels.tsx';
+import { HomeScreenName, LoginScreenName } from '../constants.tsx';
 import {
   __handleServerAccessError,
   __handleSignUp,
 } from '../utils/AccountsLogic.tsx';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
 export const RegisterScreen = () => {
   const [name, setName] = useState('');
@@ -24,18 +24,12 @@ export const RegisterScreen = () => {
   const navigation = useNavigation();
 
   const handleSignUp = () => {
-    __handleSignUp(
-      name,
-      email,
-      password,
-      confirmPassword,
-      phoneNumber,
-    )
+    __handleSignUp(name, email, password, confirmPassword, phoneNumber)
       .then(() => {
         navigation.reset({
           index: 0,
           // @ts-ignore
-          routes: [{name: HomeScreenName}],
+          routes: [{ name: HomeScreenName }],
         });
       })
       .catch(error => {

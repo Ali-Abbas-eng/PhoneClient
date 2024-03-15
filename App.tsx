@@ -6,11 +6,11 @@
  */
 
 import React from 'react';
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {HomeScreen} from './src/screens/HomeScreen.tsx';
-import {RegisterScreen} from './src/screens/RegisterScreen.tsx';
-import {LoginScreen} from './src/screens/LoginScreen.tsx';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { HomeScreen } from './src/screens/HomeScreen.tsx';
+import { RegisterScreen } from './src/screens/RegisterScreen.tsx';
+import { LoginScreen } from './src/screens/LoginScreen.tsx';
 import {
   HomeScreenName,
   LoginScreenName,
@@ -18,8 +18,8 @@ import {
   RegisterScreenName,
   SessionScreenName,
 } from './src/constants.tsx';
-import {ProfileScreen} from './src/screens/ProfileScreen.tsx';
-import {SessionScreen} from './src/screens/SessionScreen.tsx';
+import { ProfileScreen } from './src/screens/ProfileScreen.tsx';
+import { SessionScreen } from './src/screens/SessionScreen.tsx';
 
 const Stack = createNativeStackNavigator();
 
