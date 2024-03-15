@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getTokens } from './AccountsLogic.tsx';
-import { ServerEndpoint } from '../constants.tsx';
+import { ServerEndpoint } from '../constants/constants.tsx';
 
 const api = axios.create({
     baseURL: ServerEndpoint,

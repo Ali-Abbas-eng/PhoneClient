@@ -12,3 +12,4 @@ export const LoginEndpoint = ServerEndpoint + '/api/v1/login/';
 export const LoginAPITokenEndpoint = ServerEndpoint + '/api/v1/token/';
 export const RegisterEndpoint = ServerEndpoint + '/api/v1/register/';
 export const GetSessionsListEndpoint = ServerEndpoint + '/chat_scenarios/';
+export const SocketIP = WsProtocol + ServerIP + '/';

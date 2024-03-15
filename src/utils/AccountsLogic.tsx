@@ -3,8 +3,7 @@ import { validatePassword } from './informationValidators.tsx';
 import {
     LoginAPITokenEndpoint,
     RegisterEndpoint,
-    ServerEndpoint,
-} from '../constants.tsx';
+} from '../constants/constants.tsx';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 
@@ -54,10 +53,12 @@ export const __handleLogin = async (email: string, password: string) => {
         // Save the tokens in your state or in AsyncStorage
         const { access, refresh } = response.data;
         await storeTokens(access, refresh);
+        const tokens = await getTokens();
+        console.log('Tokens: ', tokens);
         return { access_granted: true };
     } catch (error) {
         return {
-            access_granted: true,
+            access_granted: false,
             error: __handleServerAccessError(error),
         };
     }

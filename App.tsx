@@ -17,7 +17,7 @@ import {
     ProfileScreenName,
     RegisterScreenName,
     SessionScreenName,
-} from './src/constants.tsx';
+} from './src/constants/constants.tsx';
 import { ProfileScreen } from './src/screens/ProfileScreen.tsx';
 import { SessionScreen } from './src/screens/SessionScreen.tsx';
 

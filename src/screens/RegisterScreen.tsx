@@ -8,7 +8,7 @@ import {
     Image,
 } from 'react-native';
 import { styles } from '../styles/styels.tsx';
-import { HomeScreenName, LoginScreenName } from '../constants.tsx';
+import { HomeScreenName, LoginScreenName } from '../constants/constants.tsx';
 import {
     __handleServerAccessError,
     __handleSignUp,

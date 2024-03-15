@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { styles } from '../styles/styels.tsx';
 import { useNavigation } from '@react-navigation/native';
-import { HomeScreenName, RegisterScreenName } from '../constants.tsx';
+import { HomeScreenName, RegisterScreenName } from '../constants/constants.tsx';
 import { __handleLogin } from '../utils/AccountsLogic.tsx';
 
 export const LoginScreen = () => {
