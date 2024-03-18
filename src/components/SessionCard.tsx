@@ -1,7 +1,7 @@
 // components/SessionCard.tsx
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { Session } from '../screens/HomeScreen.tsx';
+import { Session } from '../constants/types.tsx';
 
 type SessionCardProps = {
     session: Session;
