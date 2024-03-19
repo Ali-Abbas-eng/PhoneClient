@@ -39,6 +39,7 @@ function App(): React.JSX.Element {
                 />
                 <Stack.Screen
                     name={SessionScreenName}
+                    // @ts-ignore
                     component={SessionScreen}
                 />
             </Stack.Navigator>

@@ -22,6 +22,5 @@ export type HomeScreenProps = {
 };
 
 export type SessionScreenProps = {
-    navigation: StackNavigationProp<RootStackParamList, 'Session'>;
     route: RouteProp<RootStackParamList, 'Session'>;
 };

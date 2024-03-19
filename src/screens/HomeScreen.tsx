@@ -1,4 +1,3 @@
-// screens/HomeScreen.tsx
 import React, { useState, useEffect } from 'react';
 import {
     View,
@@ -17,54 +16,50 @@ import {
 import api from '../utils/APICaller.tsx';
 import { __tokenAuthentication } from '../utils/AccountsLogic.tsx';
 import { HomeScreenProps, Session } from '../constants/types.tsx';
-
 export function HomeScreen({ navigation }: HomeScreenProps) {
-    // navigation is a prop passed by react navigation
     const [sessions, setSessions] = useState<Session[]>([]);
     const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false); // add a state to indicate whether the refresh is active
-    // @ts-ignore
+    const [refreshing, setRefreshing] = useState(false);
     const [authenticated, setAuthenticated] = useState(false);
+
+    const fetchSessions = async () => {
+        try {
+            setLoading(true);
+            setRefreshing(true);
+            const response = await api.get(GetSessionsListEndpoint);
+            setSessions(response.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
 
     useEffect(() => {
         const authenticateAndNavigate = async () => {
             const auth = await __tokenAuthentication();
             setAuthenticated(auth);
             if (!auth) {
-                navigation.navigate(LoginScreenName);
+                throw new Error('User is not authenticated!');
             }
         };
-
-        authenticateAndNavigate();
-    }, [navigation]);
-    const fetchSessions = () => {
-        setLoading(true);
-        setRefreshing(true);
-
-        api.get(GetSessionsListEndpoint)
-            .then(response => {
-                // data is the list of sessions
-                setSessions(response.data);
-                setLoading(false);
-                setRefreshing(false);
-            })
-            .catch(error => {
-                // handle any error
-                console.error(error);
-                setLoading(false);
-                setRefreshing(false);
+        authenticateAndNavigate()
+            .then(null) // stay where you are
+            .catch(() => {
+                navigation.navigate(LoginScreenName);
             });
-    };
-    // define the onRefresh function that will be called when refresh starts
-    const onRefresh = () => {
-        // call the fetchSessions function when the screen is reloaded
-        fetchSessions();
-    };
+    }, [navigation]);
+
     useEffect(() => {
         fetchSessions();
     }, []);
+
+    const onRefresh = () => {
+        fetchSessions();
+    };
+
     if (loading || !authenticated) {
-        // show a loading indicator while fetching the data
         return (
             <View style={styles.center}>
                 <ActivityIndicator size="large" color="#0000ff" />
@@ -73,23 +68,17 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
     }
 
     return (
-        // use the RefreshControl component to add pull-to-refresh functionality
         <ScrollView
             style={styles.container}
             refreshControl={
-                <RefreshControl
-                    refreshing={refreshing} // pass the refreshing state as the refreshing prop
-                    onRefresh={onRefresh} // pass the onRefresh function as the onRefresh prop
-                />
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }>
             {sessions.map(session => (
-                // wrap the session card in a touchable component
                 <TouchableOpacity
                     key={session.id}
-                    onPress={() => {
-                        // navigate to the session screen and pass the session object
-                        navigation.navigate(SessionScreenName, { session });
-                    }}>
+                    onPress={() =>
+                        navigation.navigate(SessionScreenName, { session })
+                    }>
                     <SessionCard session={session} />
                 </TouchableOpacity>
             ))}
