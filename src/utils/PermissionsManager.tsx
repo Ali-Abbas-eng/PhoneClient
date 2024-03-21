@@ -1,19 +1,33 @@
-import { PermissionsAndroid } from 'react-native';
+import { check, PERMISSIONS, RESULTS, request } from 'react-native-permissions';
+import { notifyMessage } from './informationValidators.tsx';
 
 export async function requestAudioPermission() {
-    const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-        {
-            title: 'Audio Recording Permission',
-            message:
-                'This app needs access to your microphone to record audio.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-        },
+    let microphonePermissionStatus = await check(
+        PERMISSIONS.ANDROID.RECORD_AUDIO,
     );
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+
+    if (microphonePermissionStatus === RESULTS.GRANTED) {
+        console.log('The permission is granted');
         return true;
+    } else if (microphonePermissionStatus === RESULTS.UNAVAILABLE) {
+        console.log(
+            'This feature is not available (on this device / in this context)',
+        );
+        return false;
+    } else if (microphonePermissionStatus === RESULTS.BLOCKED) {
+        console.log('The permission is denied and not requestable anymore');
+        return false;
+    } else if (microphonePermissionStatus === RESULTS.DENIED) {
+        console.log(
+            'The permission has not been requested / is denied but requestable',
+        );
+        let result = await request(PERMISSIONS.ANDROID.RECORD_AUDIO);
+        if (result === RESULTS.GRANTED) {
+            console.log('User granted the permission');
+            return true;
+        } else {
+            console.log('User denied the permission');
+            return false;
+        }
     }
-    throw new Error('Audio Recording Permission DENIED');
 }
