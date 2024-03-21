@@ -2,28 +2,47 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ActivityIndicator, Button, StyleSheet, View } from 'react-native';
 import { SocketIP } from '../constants/constants.tsx';
 import { SessionScreenProps } from '../constants/types.tsx';
-
 import { notifyMessage } from '../utils/informationValidators.tsx';
 import { requestAudioPermission } from '../utils/PermissionsManager.tsx';
-import {
-    initialiseWebSocket,
-    startRecording,
-    stopRecording,
-} from '../utils/WebSocketManager.tsx';
+
+import { initialiseWebSocket, sendAudio } from '../utils/WebSocketManager.tsx';
+import { startRecording, stopRecording } from '../utils/AudioManager.tsx';
 
 export function SessionScreen({ route }: SessionScreenProps) {
     const [socketInitialised, setSocketInitialised] = useState(false);
     const [recording, setRecording] = useState(false);
     const { session } = route.params;
     const socketURL = SocketIP + session.socket_url;
+    console.log('Socket URL: ', socketURL);
+    console.log('Type of Socket URL: ', typeof socketURL);
+    const startSessionHandler = () => {
+        webSocket.current?.send(JSON.stringify({ start: 1 }));
+    };
+    const startRecordingHandler = () => {
+        startRecording(recording).then(result => {
+            return setRecording(result);
+        });
+    };
+    const stopRecordingHandler = () => {
+        stopRecording(recording).then(result => {
+            setRecording(!!result);
+            if (typeof result === 'string') {
+                sendAudio(webSocket, result);
+            }
+        });
+    };
     const webSocket = useRef<WebSocket | null>(null);
     useEffect(() => {
         requestAudioPermission()
-            .then(() => {
-                webSocket.current = new WebSocket(socketURL);
-                const result = initialiseWebSocket(webSocket);
-                console.log('Result of initialiseWebSocket: ', result);
-                setSocketInitialised(result.initialised);
+            .then((granted: boolean) => {
+                if (granted) {
+                    webSocket.current = new WebSocket(socketURL);
+                    const result = initialiseWebSocket(webSocket);
+                    console.log('Result of initialiseWebSocket: ', result);
+                    setSocketInitialised(result.initialised);
+                } else {
+                    // TODO: Annoy user into granting permissions
+                }
             })
             .catch(error => {
                 notifyMessage(error);
@@ -35,6 +54,7 @@ export function SessionScreen({ route }: SessionScreenProps) {
             }
         };
     }, [socketURL]);
+
     if (!socketInitialised) {
         return (
             <View style={styles.center}>
@@ -45,21 +65,17 @@ export function SessionScreen({ route }: SessionScreenProps) {
 
     return (
         <View style={styles.container}>
-            <Button title="Start Conversation" onPress={() => {}} />
+            <Button title="Start Conversation" onPress={startSessionHandler} />
             <Button
                 title="Start Recording"
                 onPress={() => {
-                    startRecording(recording).then(result => {
-                        return setRecording(result);
-                    });
+                    startRecordingHandler();
                 }}
             />
             <Button
                 title="Stop Recording"
                 onPress={() => {
-                    stopRecording(recording).then(result => {
-                        setRecording(!!result);
-                    });
+                    stopRecordingHandler();
                 }}
             />
         </View>
