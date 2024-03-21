@@ -1,23 +1,25 @@
-import { check, PERMISSIONS, RESULTS, request } from 'react-native-permissions';
-import { notifyMessage } from './informationValidators.tsx';
+import {
+    check,
+    PERMISSIONS,
+    RESULTS,
+    request,
+    Permission,
+} from 'react-native-permissions';
 
-export async function requestAudioPermission() {
-    let microphonePermissionStatus = await check(
-        PERMISSIONS.ANDROID.RECORD_AUDIO,
-    );
-
-    if (microphonePermissionStatus === RESULTS.GRANTED) {
+export async function requestPermissions(resource: Permission) {
+    let status = await check(resource);
+    if (status === RESULTS.GRANTED) {
         console.log('The permission is granted');
         return true;
-    } else if (microphonePermissionStatus === RESULTS.UNAVAILABLE) {
+    } else if (status === RESULTS.UNAVAILABLE) {
         console.log(
             'This feature is not available (on this device / in this context)',
         );
         return false;
-    } else if (microphonePermissionStatus === RESULTS.BLOCKED) {
+    } else if (status === RESULTS.BLOCKED) {
         console.log('The permission is denied and not requestable anymore');
         return false;
-    } else if (microphonePermissionStatus === RESULTS.DENIED) {
+    } else if (status === RESULTS.DENIED) {
         console.log(
             'The permission has not been requested / is denied but requestable',
         );
@@ -30,4 +32,5 @@ export async function requestAudioPermission() {
             return false;
         }
     }
+    return false;
 }
