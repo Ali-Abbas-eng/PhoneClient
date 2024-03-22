@@ -3,11 +3,15 @@ import { ActivityIndicator, Button, StyleSheet, View } from 'react-native';
 import { SocketIP } from '../constants/constants.tsx';
 import { SessionScreenProps } from '../constants/types.tsx';
 import { notifyMessage } from '../utils/informationValidators.tsx';
-import { requestPermissions } from '../utils/PermissionsManager.tsx';
+import {
+    __requestPermissions,
+    requestPermissions,
+} from '../utils/PermissionsManager.tsx';
 
 import { initialiseWebSocket, sendAudio } from '../utils/WebSocketManager.tsx';
 import { startRecording, stopRecording } from '../utils/AudioManager.tsx';
 import { PERMISSIONS } from 'react-native-permissions';
+import { VoiceNoteRecorder } from '../components/AudioRecorder.tsx';
 
 export function SessionScreen({ route }: SessionScreenProps) {
     const [socketInitialised, setSocketInitialised] = useState(false);
@@ -48,7 +52,7 @@ export function SessionScreen({ route }: SessionScreenProps) {
 
     const webSocket = useRef<WebSocket | null>(null);
     useEffect(() => {
-        requestPermissions(PERMISSIONS.ANDROID.RECORD_AUDIO)
+        __requestPermissions(PERMISSIONS.ANDROID.RECORD_AUDIO)
             .then((granted: boolean) => {
                 if (granted) {
                     webSocket.current = new WebSocket(socketURL);
@@ -62,7 +66,20 @@ export function SessionScreen({ route }: SessionScreenProps) {
             .catch(error => {
                 notifyMessage(error);
             });
-        requestPermissions(PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE)
+        __requestPermissions(PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE)
+            .then((granted: boolean) => {
+                if (granted) {
+                    console.log(
+                        'Permission to write to external storage, granted',
+                    );
+                } else {
+                    // TODO: Annoy user into granting permissions
+                }
+            })
+            .catch(error => {
+                notifyMessage(error);
+            });
+        __requestPermissions(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE)
             .then((granted: boolean) => {
                 if (granted) {
                     console.log(
@@ -94,18 +111,19 @@ export function SessionScreen({ route }: SessionScreenProps) {
     return (
         <View style={styles.container}>
             <Button title="Start Conversation" onPress={startSessionHandler} />
-            <Button
-                title="Start Recording"
-                onPress={() => {
-                    startRecordingHandler();
-                }}
-            />
-            <Button
-                title="Stop Recording"
-                onPress={() => {
-                    stopRecordingHandler();
-                }}
-            />
+            <VoiceNoteRecorder />
+            {/*<Button*/}
+            {/*    title="Start Recording"*/}
+            {/*    onPress={() => {*/}
+            {/*        startRecordingHandler();*/}
+            {/*    }}*/}
+            {/*/>*/}
+            {/*<Button*/}
+            {/*    title="Stop Recording"*/}
+            {/*    onPress={() => {*/}
+            {/*        stopRecordingHandler();*/}
+            {/*    }}*/}
+            {/*/>*/}
         </View>
     );
 }
