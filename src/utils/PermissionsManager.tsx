@@ -1,12 +1,6 @@
-import {
-    check,
-    PERMISSIONS,
-    RESULTS,
-    request,
-    Permission,
-} from 'react-native-permissions';
+import { check, Permission, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
 
-export async function requestPermissions(resource: Permission) {
+export async function __requestPermissions(resource: Permission) {
     let status = await check(resource);
     if (status === RESULTS.GRANTED) {
         console.log('The permission is granted');
@@ -33,4 +27,21 @@ export async function requestPermissions(resource: Permission) {
         }
     }
     return false;
+}
+
+export async function requestPermissions(resources: Array<Permission>) {
+    if (!Array.isArray(resources)) {
+        resources = [resources];
+    }
+    let permissionGrantStatusArray: Promise<boolean>[] = resources.map(
+        async (resource: Permission) => {
+            try {
+                return await __requestPermissions(resource);
+            } catch (_) {
+                return false;
+            }
+        },
+    );
+    const results: boolean[] = await Promise.all(permissionGrantStatusArray);
+    return results.every((result: boolean) => result);
 }
