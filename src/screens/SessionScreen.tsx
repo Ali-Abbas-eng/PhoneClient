@@ -8,46 +8,18 @@ import {
     requestPermissions,
 } from '../utils/PermissionsManager.tsx';
 
-import { initialiseWebSocket, sendAudio } from '../utils/WebSocketManager.tsx';
-import { startRecording, stopRecording } from '../utils/AudioManager.tsx';
+import { initialiseWebSocket } from '../utils/WebSocketManager.tsx';
 import { PERMISSIONS } from 'react-native-permissions';
-import { VoiceNoteRecorder } from '../components/AudioRecorder.tsx';
+import { SessionManager } from '../components/AudioRecorder.tsx';
 
 export function SessionScreen({ route }: SessionScreenProps) {
     const [socketInitialised, setSocketInitialised] = useState(false);
-    const [recording, setRecording] = useState(false);
     const { session } = route.params;
     const socketURL = SocketIP + session.socket_url;
     console.log('Socket URL: ', socketURL);
     console.log('Type of Socket URL: ', typeof socketURL);
     const startSessionHandler = () => {
         webSocket.current?.send(JSON.stringify({ start: 1 }));
-    };
-    const startRecordingHandler = () => {
-        startRecording().then(result => {
-            if (!recording) {
-                if (result.error) {
-                    console.error('Failed to start recording: ', result.error);
-                } else {
-                    setRecording(result.recording);
-                }
-            } else {
-                console.log('Already Recording (START RECORDING THEN CLAUSE)');
-            }
-        });
-    };
-
-    const stopRecordingHandler = () => {
-        stopRecording().then((result: any) => {
-            if (result.error) {
-                console.error('Failed to stop recording: ', result.error);
-            } else {
-                setRecording(result.recording);
-                if (result.filePath) {
-                    sendAudio(webSocket, result.filePath);
-                }
-            }
-        });
     };
 
     const webSocket = useRef<WebSocket | null>(null);
@@ -110,20 +82,7 @@ export function SessionScreen({ route }: SessionScreenProps) {
 
     return (
         <View style={styles.container}>
-            <Button title="Start Conversation" onPress={startSessionHandler} />
-            <VoiceNoteRecorder />
-            {/*<Button*/}
-            {/*    title="Start Recording"*/}
-            {/*    onPress={() => {*/}
-            {/*        startRecordingHandler();*/}
-            {/*    }}*/}
-            {/*/>*/}
-            {/*<Button*/}
-            {/*    title="Stop Recording"*/}
-            {/*    onPress={() => {*/}
-            {/*        stopRecordingHandler();*/}
-            {/*    }}*/}
-            {/*/>*/}
+            <SessionManager webSocket={webSocket} />
         </View>
     );
 }

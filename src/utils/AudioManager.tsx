@@ -3,10 +3,11 @@ import AudioRecorderPlayer, {
     AudioSourceAndroidType,
     AVEncoderAudioQualityIOSType,
     AVEncodingOption,
+    AVModeIOSOption,
 } from 'react-native-audio-recorder-player';
 
 const audioRecorderPlayer = new AudioRecorderPlayer();
-import ReactNativeFileSystem from 'react-native-fs';
+import { DocumentDirectoryPath } from 'react-native-fs';
 import { readFile } from 'react-native-fs';
 const Sound = require('react-native-sound');
 export const playSound = (soundFile: string) => {
@@ -17,10 +18,8 @@ export const playSound = (soundFile: string) => {
         }
         // loaded successfully
         console.log(
-            'duration in seconds: ' +
-                sound.getDuration() +
-                'number of channels: ' +
-                sound.getNumberOfChannels(),
+            `Duration in Seconds: ${sound.getDuration()}
+             Number of Channels: ${sound.getNumberOfChannels()}`,
         );
 
         // Play the sound with an onEnd callback
@@ -35,40 +34,56 @@ export const playSound = (soundFile: string) => {
 };
 
 export const getSoundData = async (audioFilePath: string) => {
-    // Read the audio file's content as binary data
-    let result = await readFile(audioFilePath, 'base64');
-    console.log('Playing from: ', result);
+    // Read the audio file's content as base64
+    let base64String = await readFile(audioFilePath, 'base64');
+    console.log('Playing from: ', base64String);
     playSound(audioFilePath);
     console.log('Done Playing...');
-    return Buffer.from(result, 'base64');
+    // Convert base64 to binary
+    let binaryData = Buffer.from(base64String, 'base64');
+    return binaryData;
+};
+
+const generateAudioName = () => {
+    return `${Math.floor(new Date().getTime() / 1000)}`;
 };
 
 export const startRecording = async () => {
-    const path = `${ReactNativeFileSystem.DocumentDirectoryPath}/buffer.mp3`;
+    const path = `${DocumentDirectoryPath}/${generateAudioName()}.aac`;
     const audioSet = {
         AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
         AudioSourceAndroid: AudioSourceAndroidType.MIC,
+        AVModeIOS: AVModeIOSOption.measurement,
         AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
         AVNumberOfChannelsKeyIOS: 2,
         AVFormatIDKeyIOS: AVEncodingOption.aac,
     };
+    const meteringEnabled = false;
+
     try {
-        const uri = await audioRecorderPlayer.startRecorder(path, audioSet);
-        audioRecorderPlayer.addRecordBackListener((_: any) => {
-            return;
-        });
-        console.log(`Recording started at path: ${uri}`);
-        playSound(uri);
-        return { recording: true, filePath: uri };
-    } catch (error: any) {
-        console.error('Failed to start recording: ', error);
-        return { recording: false, error: error.message };
+        const uri = await audioRecorderPlayer.startRecorder(
+            path,
+            audioSet,
+            meteringEnabled,
+        );
+        return { isRecording: true, audioPath: uri };
+    } catch (error) {
+        console.log('Uh-oh! Failed to start recording:', error);
+        return { isRecording: false, audioPath: '', error: error };
     }
 };
 
-export const stopRecording = async () => {
-    return {
-        filePath: `${ReactNativeFileSystem.DocumentDirectoryPath}/buffer.mp3`,
-        recording: false,
-    };
+export const stopRecording = async (isRecording: boolean) => {
+    if (isRecording) {
+        try {
+            await audioRecorderPlayer.stopRecorder();
+            return { isRecording: false };
+        } catch (error) {
+            console.log('Oops! Failed to stop recording:', error);
+            return { isRecording: isRecording, error: error };
+        }
+    } else {
+        console.log('Not Recording to being with');
+        return { isRecording };
+    }
 };
