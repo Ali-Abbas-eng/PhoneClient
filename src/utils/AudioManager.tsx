@@ -33,17 +33,6 @@ export const playSound = (soundFile: string) => {
     });
 };
 
-export const getSoundData = async (audioFilePath: string) => {
-    // Read the audio file's content as base64
-    let base64String = await readFile(audioFilePath, 'base64');
-    console.log('Playing from: ', base64String);
-    playSound(audioFilePath);
-    console.log('Done Playing...');
-    // Convert base64 to binary
-    let binaryData = Buffer.from(base64String, 'base64');
-    return binaryData;
-};
-
 const generateAudioName = () => {
     return `${Math.floor(new Date().getTime() / 1000)}`;
 };

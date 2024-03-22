@@ -2,7 +2,7 @@
 import WebSocket from 'react-native-websocket';
 import { ServerEndpoint } from '../constants/constants.tsx';
 import React from 'react';
-import { getSoundData, playSound } from './AudioManager.tsx';
+import { playSound } from './AudioManager.tsx';
 
 export const initialiseWebSocket = (
     webSocket: React.MutableRefObject<WebSocket | null>,
@@ -45,8 +45,27 @@ export async function sendAudio(
     if (!webSocket.current) return;
 
     try {
-        const audioData = getSoundData(audioFilePath);
-        webSocket.current.send(audioData);
+        // Fetch the file
+        const response = await fetch(audioFilePath);
+
+        // Get the file as a Blob
+        const blob = await response.blob();
+
+        // Create a new FileReader
+        const reader = new FileReader();
+
+        // Define what happens when the file has been read
+        reader.onloadend = () => {
+            // Get the result (an ArrayBuffer)
+            const arrayBuffer = reader.result;
+
+            // Send the ArrayBuffer over the WebSocket
+            webSocket.current.send(arrayBuffer);
+        };
+
+        // Read the Blob as an ArrayBuffer
+        reader.readAsArrayBuffer(blob);
+        // webSocket.current.send(audioData);
     } catch (error) {
         console.error('Error sending audio: ', error);
     }
