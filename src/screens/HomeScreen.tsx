@@ -14,14 +14,18 @@ import {
     SessionScreenName,
 } from '../constants/constants.tsx';
 import api from '../utils/APICaller.tsx';
-import { __tokenAuthentication } from '../utils/AccountsLogic.tsx';
+import {
+    __handleServerAccessError,
+    __refreshTokens,
+    __removeTokens,
+    __tokenAuthentication,
+} from '../utils/AccountsLogic.tsx';
 import { HomeScreenProps, Session } from '../constants/types.tsx';
 export function HomeScreen({ navigation }: HomeScreenProps) {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [authenticated, setAuthenticated] = useState(false);
-
     const fetchSessions = async () => {
         try {
             setLoading(true);
@@ -40,21 +44,24 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
         const authenticateAndNavigate = async () => {
             const auth = await __tokenAuthentication();
             setAuthenticated(auth);
-            if (!auth) {
-                throw new Error('User is not authenticated!');
-            }
+            return auth;
         };
-        authenticateAndNavigate()
-            .then(null) // stay where you are
-            .catch(() => {
-                navigation.navigate(LoginScreenName);
-            });
+        __refreshTokens().then(() => {
+            authenticateAndNavigate()
+                .then((result: boolean) => {
+                    if (!result) {
+                        navigation.navigate(LoginScreenName);
+                    } else {
+                        __handleServerAccessError('User is not authenticated');
+                    }
+                }) // stay where you are
+                .catch(() => {});
+        });
     }, [navigation]);
 
     useEffect(() => {
         fetchSessions();
     }, []);
-
     const onRefresh = () => {
         fetchSessions();
     };

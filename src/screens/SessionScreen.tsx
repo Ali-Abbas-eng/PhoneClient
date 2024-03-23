@@ -3,10 +3,7 @@ import { ActivityIndicator, Button, StyleSheet, View } from 'react-native';
 import { SocketIP } from '../constants/constants.tsx';
 import { SessionScreenProps } from '../constants/types.tsx';
 import { notifyMessage } from '../utils/informationValidators.tsx';
-import {
-    __requestPermissions,
-    requestPermissions,
-} from '../utils/PermissionsManager.tsx';
+import { __requestPermissions } from '../utils/PermissionsManager.tsx';
 
 import { initialiseWebSocket } from '../utils/WebSocketManager.tsx';
 import { PERMISSIONS } from 'react-native-permissions';
@@ -18,10 +15,6 @@ export function SessionScreen({ route }: SessionScreenProps) {
     const socketURL = SocketIP + session.socket_url;
     console.log('Socket URL: ', socketURL);
     console.log('Type of Socket URL: ', typeof socketURL);
-    const startSessionHandler = () => {
-        webSocket.current?.send(JSON.stringify({ start: 1 }));
-    };
-
     const webSocket = useRef<WebSocket | null>(null);
     useEffect(() => {
         __requestPermissions(PERMISSIONS.ANDROID.RECORD_AUDIO)
