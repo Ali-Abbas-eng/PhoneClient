@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ActivityIndicator, Button, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { SocketIP } from '../constants/constants.tsx';
 import { SessionScreenProps } from '../constants/types.tsx';
 import { notifyMessage } from '../utils/informationValidators.tsx';
@@ -9,9 +9,9 @@ import { initialiseWebSocket } from '../utils/WebSocketManager.tsx';
 import { PERMISSIONS } from 'react-native-permissions';
 import { SessionManager } from '../components/AudioRecorder.tsx';
 
-export function SessionScreen({ route }: SessionScreenProps) {
+export const SessionScreen = (props: any) => {
     const [socketInitialised, setSocketInitialised] = useState(false);
-    const { session } = route.params;
+    const { session } = props.route as SessionScreenProps['route']['params'];
     const socketURL = SocketIP + session.socket_url;
     console.log('Socket URL: ', socketURL);
     console.log('Type of Socket URL: ', typeof socketURL);
@@ -78,7 +78,7 @@ export function SessionScreen({ route }: SessionScreenProps) {
             <SessionManager webSocket={webSocket} />
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
