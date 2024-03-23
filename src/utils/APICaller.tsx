@@ -9,7 +9,9 @@ const api = axios.create({
 api.interceptors.request.use(
     async config => {
         const { access } = await getTokens();
-        config.headers.Authorization = `Bearer ${access}`;
+        console.log(access);
+        config.headers.Authorization = `JWT ${access}`;
+        console.log(config);
         return config;
     },
     error => Promise.reject(error),

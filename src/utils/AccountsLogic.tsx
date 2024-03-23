@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { validatePassword } from './informationValidators.tsx';
 import {
-    LoginAPITokenEndpoint,
+    LoginAPITokenEndpoint, RefreshTokenEndpoint,
     RegisterEndpoint,
 } from '../constants/constants.tsx';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -21,6 +21,15 @@ export const storeTokens = async (access: string, refresh: string) => {
     try {
         await AsyncStorage.setItem('access', access);
         await AsyncStorage.setItem('refresh', refresh);
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+export const __removeTokens = async () => {
+    try {
+        await AsyncStorage.removeItem('access');
+        await AsyncStorage.removeItem('refresh');
     } catch (error) {
         console.error(error);
     }
@@ -52,9 +61,8 @@ export const __handleLogin = async (email: string, password: string) => {
         });
         // Save the tokens in your state or in AsyncStorage
         const { access, refresh } = response.data;
+        await __removeTokens();
         await storeTokens(access, refresh);
-        const tokens = await getTokens();
-        console.log('Tokens: ', tokens);
         return { access_granted: true };
     } catch (error) {
         return {
@@ -73,7 +81,7 @@ export const __handleSignUp = async (
 ) => {
     const validationMessage = validatePassword(password, confirmPassword);
     if (validationMessage !== 'SUCCESS') {
-        throw new Error(validationMessage);
+        __handleServerAccessError(validationMessage);
     }
 
     try {
@@ -85,13 +93,10 @@ export const __handleSignUp = async (
             password1: password,
             password2: confirmPassword,
         });
-
-        if (response.status === 201) {
-            return response.data;
-        }
-        return false;
+        return response.status === 204;
     } catch (error: unknown) {
         __handleServerAccessError(error);
+        return false;
     }
 };
 
@@ -116,4 +121,24 @@ export const __handleServerAccessError = (error: unknown) => {
         { cancelable: false },
     );
     return errorMessage;
+};
+
+export const __refreshTokens = async () => {
+    try {
+        const { refresh: refreshToken } = await getTokens();
+        const response = await axios.post(RefreshTokenEndpoint, {
+            refresh: refreshToken,
+        });
+
+        const { access, refresh } = response.data;
+
+        await __removeTokens();
+        await storeTokens(access, refresh);
+
+        return { refreshed: true };
+    } catch (error) {
+        console.error(error);
+        __handleServerAccessError(error);
+        return { refreshed: false };
+    }
 };

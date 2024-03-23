@@ -10,8 +10,10 @@ import {
 import { styles } from '../styles/styels.tsx';
 import { HomeScreenName, LoginScreenName } from '../constants/constants.tsx';
 import {
+    __handleLogin,
     __handleServerAccessError,
     __handleSignUp,
+    __removeTokens,
 } from '../utils/AccountsLogic.tsx';
 import { useNavigation } from '@react-navigation/native';
 
@@ -23,14 +25,26 @@ export const RegisterScreen = () => {
     const [phoneNumber, setPhoneNumber] = useState('');
     const navigation = useNavigation();
 
-    const handleSignUp = () => {
+    const handleSignUp = async () => {
+        await __removeTokens();
         __handleSignUp(name, email, password, confirmPassword, phoneNumber)
-            .then(() => {
-                navigation.reset({
-                    index: 0,
-                    // @ts-ignore
-                    routes: [{ name: HomeScreenName }],
-                });
+            .then((response: any) => {
+                console.log(`Response from __handleSignUp was: ${response}`);
+                if (response) {
+                    __handleLogin(email, password)
+                        .then((result: any) => {
+                            if (result) {
+                                navigation.reset({
+                                    index: 0,
+                                    // @ts-ignore
+                                    routes: [{ name: HomeScreenName }],
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            __handleServerAccessError(error);
+                        });
+                }
             })
             .catch(error => {
                 __handleServerAccessError(error);
