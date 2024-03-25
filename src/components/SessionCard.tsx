@@ -1,16 +1,17 @@
 // components/SessionCard.tsx
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Session } from '../constants/types.tsx';
 
 type SessionCardProps = {
     session: Session;
+    functionality: any;
 };
 
-export function SessionCard({ session }: SessionCardProps) {
+export function SessionCard({ session, functionality }: SessionCardProps) {
     // session is an object from the list
     return (
-        <View style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={functionality}>
             <Image
                 source={{ uri: session.background_url }}
                 style={styles.background}
@@ -27,7 +28,7 @@ export function SessionCard({ session }: SessionCardProps) {
                     </Text>
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 

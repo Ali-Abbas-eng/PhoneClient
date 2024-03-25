@@ -8,7 +8,7 @@ import {
     Image,
 } from 'react-native';
 import { styles } from '../styles/styels.tsx';
-import { HomeScreenName, LoginScreenName } from '../constants/constants.tsx';
+import { HomeScreenName, LoginScreenName, ScreenNames } from '../constants/constants.tsx';
 import {
     __handleLogin,
     __handleServerAccessError,
@@ -17,7 +17,7 @@ import {
 } from '../utils/AccountsLogic.tsx';
 import { useNavigation } from '@react-navigation/native';
 
-export const RegisterScreen = () => {
+export const Signup = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -37,7 +37,7 @@ export const RegisterScreen = () => {
                                 navigation.reset({
                                     index: 0,
                                     // @ts-ignore
-                                    routes: [{ name: HomeScreenName }],
+                                    routes: [{ name: ScreenNames.Home }],
                                 });
                             }
                         })

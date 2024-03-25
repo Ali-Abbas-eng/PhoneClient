@@ -9,7 +9,7 @@ import {
 import {
     GetSessionsListEndpoint,
     LoginScreenName,
-    ScenariosScreenName,
+    ScenariosScreenName, ScreenNames,
 } from '../constants/constants.tsx';
 import api from '../utils/APICaller.tsx';
 import {
@@ -19,7 +19,7 @@ import {
 } from '../utils/AccountsLogic.tsx';
 import { HomeScreenProps, Session } from '../constants/types.tsx';
 import { LanguageCard } from '../components/LanguageCard.tsx';
-export function HomeScreen({ navigation }: HomeScreenProps) {
+export function Home({ navigation }: HomeScreenProps) {
     const [sessions, setSessions] = useState<Record<string, Session[]>>({
         '': [],
     });
@@ -50,7 +50,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
             authenticateAndNavigate()
                 .then((result: boolean) => {
                     if (!result) {
-                        navigation.navigate(LoginScreenName);
+                        navigation.navigate(ScreenNames.Login);
                     } else {
                         __handleServerAccessError('User is not authenticated');
                     }
@@ -86,7 +86,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
                     language={language}
                     sessions={sessions[language]}
                     onPress={() =>
-                        navigation.navigate(ScenariosScreenName, {
+                        navigation.navigate(ScreenNames.Setups, {
                             sessions: sessions[language],
                         })
                     }

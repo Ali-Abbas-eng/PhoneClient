@@ -9,9 +9,10 @@ import { initialiseWebSocket } from '../utils/WebSocketManager.tsx';
 import { PERMISSIONS } from 'react-native-permissions';
 import { SessionManager } from '../components/AudioRecorder.tsx';
 
-export const SessionScreen = (props: any) => {
+export const Session: React.FC<SessionScreenProps> = ({ route }) => {
     const [socketInitialised, setSocketInitialised] = useState(false);
-    const { session } = props.route as SessionScreenProps['route']['params'];
+    const { session } = route.params;
+    console.log(session);
     const socketURL = SocketIP + session.socket_url;
     console.log('Socket URL: ', socketURL);
     console.log('Type of Socket URL: ', typeof socketURL);

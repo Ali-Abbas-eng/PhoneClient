@@ -8,20 +8,21 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { HomeScreen } from './src/screens/HomeScreen.tsx';
-import { RegisterScreen } from './src/screens/RegisterScreen.tsx';
-import { LoginScreen } from './src/screens/LoginScreen.tsx';
+import { Home } from './src/screens/Home.tsx';
+import { Signup } from './src/screens/Signup.tsx';
+import { Login } from './src/screens/Login.tsx';
 import {
     HomeScreenName,
     LoginScreenName,
     ProfileScreenName,
     RegisterScreenName,
     ScenariosScreenName,
+    ScreenNames,
     SessionScreenName,
 } from './src/constants/constants.tsx';
-import { ProfileScreen } from './src/screens/ProfileScreen.tsx';
-import { SessionScreen } from './src/screens/SessionScreen.tsx';
-import { ScenariosScreen } from './src/screens/ScenariosScreen.tsx';
+import { Profile } from './src/screens/Profile.tsx';
+import { Session } from './src/screens/Session.tsx';
+import { Setups } from './src/screens/Setups.tsx';
 
 const Stack = createNativeStackNavigator();
 
@@ -29,24 +30,12 @@ function App(): React.JSX.Element {
     return (
         <NavigationContainer>
             <Stack.Navigator>
-                <Stack.Screen name={HomeScreenName} component={HomeScreen} />
-                <Stack.Screen
-                    name={ScenariosScreenName}
-                    component={ScenariosScreen}
-                />
-                <Stack.Screen name={LoginScreenName} component={LoginScreen} />
-                <Stack.Screen
-                    name={ProfileScreenName}
-                    component={ProfileScreen}
-                />
-                <Stack.Screen
-                    name={RegisterScreenName}
-                    component={RegisterScreen}
-                />
-                <Stack.Screen
-                    name={SessionScreenName}
-                    component={SessionScreen}
-                />
+                <Stack.Screen name={ScreenNames.Home} component={Home} />
+                <Stack.Screen name={ScreenNames.Setups} component={Setups} />
+                <Stack.Screen name={ScreenNames.Login} component={Login} />
+                <Stack.Screen name={ScreenNames.Profile} component={Profile} />
+                <Stack.Screen name={ScreenNames.Signup} component={Signup} />
+                <Stack.Screen name={ScreenNames.Session} component={Session} />
             </Stack.Navigator>
         </NavigationContainer>
     );
