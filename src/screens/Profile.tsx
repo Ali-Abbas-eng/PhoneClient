@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 
-export const ProfileScreen = () => {
+export const Profile = () => {
     const user = {
         first_name: 'Ali',
         last_name: 'Abbas',

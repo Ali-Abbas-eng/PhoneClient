@@ -4,25 +4,25 @@ import {
     ScrollView,
     ActivityIndicator,
     StyleSheet,
-    TouchableOpacity,
     RefreshControl,
 } from 'react-native';
-import { SessionCard } from '../components/SessionCard';
 import {
     GetSessionsListEndpoint,
     LoginScreenName,
-    SessionScreenName,
+    ScenariosScreenName, ScreenNames,
 } from '../constants/constants.tsx';
 import api from '../utils/APICaller.tsx';
 import {
     __handleServerAccessError,
     __refreshTokens,
-    __removeTokens,
     __tokenAuthentication,
 } from '../utils/AccountsLogic.tsx';
 import { HomeScreenProps, Session } from '../constants/types.tsx';
-export function HomeScreen({ navigation }: HomeScreenProps) {
-    const [sessions, setSessions] = useState<Session[]>([]);
+import { LanguageCard } from '../components/LanguageCard.tsx';
+export function Home({ navigation }: HomeScreenProps) {
+    const [sessions, setSessions] = useState<Record<string, Session[]>>({
+        '': [],
+    });
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [authenticated, setAuthenticated] = useState(false);
@@ -50,7 +50,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
             authenticateAndNavigate()
                 .then((result: boolean) => {
                     if (!result) {
-                        navigation.navigate(LoginScreenName);
+                        navigation.navigate(ScreenNames.Login);
                     } else {
                         __handleServerAccessError('User is not authenticated');
                     }
@@ -80,14 +80,17 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
             refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }>
-            {sessions.map(session => (
-                <TouchableOpacity
-                    key={session.id}
+            {Object.keys(sessions).map((language, index) => (
+                <LanguageCard
+                    key={index}
+                    language={language}
+                    sessions={sessions[language]}
                     onPress={() =>
-                        navigation.navigate(SessionScreenName, { session })
-                    }>
-                    <SessionCard session={session} />
-                </TouchableOpacity>
+                        navigation.navigate(ScreenNames.Setups, {
+                            sessions: sessions[language],
+                        })
+                    }
+                />
             ))}
         </ScrollView>
     );

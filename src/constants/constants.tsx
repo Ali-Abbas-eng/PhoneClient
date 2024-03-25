@@ -4,6 +4,15 @@ export const RegisterScreenName = 'Register';
 export const ProfileScreenName = 'Profile';
 
 export const SessionScreenName = 'Session';
+export const ScenariosScreenName = 'Scenarios';
+export enum ScreenNames {
+    Home = 'Home',
+    Login = 'Login',
+    Signup = 'Signup',
+    Profile = 'Profile',
+    Session = 'Session',
+    Setups = 'Setups',
+}
 export const HttpProtocol = 'http:';
 export const WsProtocol = 'ws:';
 export const ServerIP = '//10.0.2.2:8000';

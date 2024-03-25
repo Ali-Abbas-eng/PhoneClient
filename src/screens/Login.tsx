@@ -13,7 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { HomeScreenName, RegisterScreenName } from '../constants/constants.tsx';
 import { __handleLogin } from '../utils/AccountsLogic.tsx';
 
-export const LoginScreen = () => {
+export const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigation = useNavigation();
