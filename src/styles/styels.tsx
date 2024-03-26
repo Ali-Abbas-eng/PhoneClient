@@ -101,16 +101,15 @@ export const styles = StyleSheet.create({
         resizeMode: 'cover',
     },
     image: {
-        width: 100,
-        height: 100,
+        width: 80,
+        height: 80,
         margin: 10,
         borderRadius: 10,
         borderWidth: 2,
-        borderColor: '#fff',
+        borderColor: '#000',
     },
     content: {
         padding: 10,
-        flex: 1,
     },
     description: {
         fontSize: 14,
