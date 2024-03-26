@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
+import { styles } from '../../styles/styels.tsx';
 
 export const Profile = () => {
     const user = {
@@ -40,7 +41,7 @@ export const Profile = () => {
                             source={
                                 image
                                     ? { uri: image }
-                                    : require('../../assets/default_profile.png')
+                                    : require('../../../assets/default_profile.png')
                             }
                         />
                     </TouchableOpacity>
@@ -59,76 +60,3 @@ export const Profile = () => {
         </View>
     );
 };
-
-import { StyleSheet } from 'react-native';
-
-export const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    logo: {
-        width: 200,
-        height: 200,
-        resizeMode: 'contain',
-    },
-    inputContainer: {
-        width: '80%',
-        marginVertical: 20,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#777',
-        padding: 10,
-        marginVertical: 10,
-        borderRadius: 10,
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        width: '60%',
-    },
-    button: {
-        backgroundColor: '#f0c14b',
-        padding: 15,
-        borderRadius: 10,
-    },
-    buttonOutline: {
-        backgroundColor: '#fff',
-        borderWidth: 1,
-        borderColor: '#f0c14b',
-    },
-    buttonText: {
-        color: '#000',
-        fontWeight: 'bold',
-    },
-    buttonOutlineText: {
-        color: '#f0c14b',
-        fontWeight: 'bold',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginVertical: 10,
-    },
-    profileContainer: {
-        width: '80%',
-        alignItems: 'center',
-    },
-    profileImage: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        marginVertical: 10,
-    },
-    profileText: {
-        fontSize: 18,
-        marginVertical: 5,
-    },
-    loadingText: {
-        fontSize: 18,
-        color: '#777',
-    },
-});

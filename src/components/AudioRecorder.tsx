@@ -40,18 +40,8 @@ export const SessionManager = ({ webSocket }: WebSocket) => {
     return (
         <View>
             <Button title="CONVERSE" onPress={startConversation} />
-            <Button
-                title="Start Recording"
-                onPress={() => {
-                    startRecordingHandler();
-                }}
-            />
-            <Button
-                title="Stop Recording"
-                onPress={() => {
-                    stopRecordingHandler();
-                }}
-            />
+            <Button title="Start Recording" onPress={startRecordingHandler} />
+            <Button title="Stop Recording" onPress={stopRecordingHandler} />
             <Button title="Play Audio" onPress={() => playSound(audioPath)} />
         </View>
     );

@@ -135,10 +135,10 @@ export const __refreshTokens = async () => {
         await __removeTokens();
         await storeTokens(access, refresh);
 
-        return { refreshed: true };
+        return true;
     } catch (error) {
         console.error(error);
         __handleServerAccessError(error);
-        return { refreshed: false };
+        return false;
     }
 };

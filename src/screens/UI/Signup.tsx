@@ -7,14 +7,14 @@ import {
     View,
     Image,
 } from 'react-native';
-import { styles } from '../styles/styels.tsx';
-import { HomeScreenName, LoginScreenName, ScreenNames } from '../constants/constants.tsx';
+import { styles } from '../../styles/styels.tsx';
+import { HomeScreenName, LoginScreenName, ScreenNames } from '../../constants/constants.tsx';
 import {
     __handleLogin,
     __handleServerAccessError,
     __handleSignUp,
     __removeTokens,
-} from '../utils/AccountsLogic.tsx';
+} from '../../utils/AccountsLogic.tsx';
 import { useNavigation } from '@react-navigation/native';
 
 export const Signup = () => {
@@ -55,7 +55,7 @@ export const Signup = () => {
         <KeyboardAvoidingView style={styles.container} behavior="padding">
             <Image
                 style={styles.logo}
-                source={require('../../assets/logo_no_background.png')}
+                source={require('../../../assets/logo_no_background.png')}
             />
 
             <View style={styles.inputContainer}>

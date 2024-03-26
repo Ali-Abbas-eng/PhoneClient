@@ -6,12 +6,14 @@ import {
     TouchableOpacity,
     View,
     Image,
-    Alert,
 } from 'react-native';
-import { styles } from '../styles/styels.tsx';
+import { styles } from '../../styles/styels.tsx';
 import { useNavigation } from '@react-navigation/native';
-import { HomeScreenName, RegisterScreenName } from '../constants/constants.tsx';
-import { __handleLogin } from '../utils/AccountsLogic.tsx';
+import {
+    HomeScreenName,
+    RegisterScreenName,
+} from '../../constants/constants.tsx';
+import { __handleLogin } from '../../utils/AccountsLogic.tsx';
 
 export const Login = () => {
     const [email, setEmail] = useState('');
@@ -34,7 +36,7 @@ export const Login = () => {
         <KeyboardAvoidingView style={styles.container} behavior="padding">
             <Image
                 style={styles.logo}
-                source={require('../../assets/logo_no_background.png')}
+                source={require('../../../assets/logo_no_background.png')}
             />
             <View style={styles.inputContainer}>
                 <TextInput
