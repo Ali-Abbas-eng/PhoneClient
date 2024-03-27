@@ -1,9 +1,5 @@
 import axios from 'axios';
-import { validatePassword } from './informationValidators.tsx';
-import {
-    RefreshTokenEndpoint,
-    RegisterEndpoint,
-} from '../constants/constants.tsx';
+import { RefreshTokenEndpoint } from '../constants/constants.tsx';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 
@@ -55,6 +51,7 @@ export const __tokenAuthentication = async () => {
 };
 
 export const __handleServerAccessError = (error: unknown) => {
+    console.log(error);
     const axiosError = error as AxiosError;
     let errorMessage;
 
@@ -65,21 +62,27 @@ export const __handleServerAccessError = (error: unknown) => {
     } else {
         errorMessage = axiosError.message;
     }
+
+    // Ensure errorMessage is a string
+    if (typeof errorMessage !== 'string') {
+        if (errorMessage && errorMessage.hasOwnProperty('detail')) {
+            errorMessage = errorMessage.detail;
+        } else {
+            errorMessage = JSON.stringify(errorMessage);
+        }
+    }
+
     try {
         Alert.alert(
             'Error',
-            errorMessage.hasOwnProperty('detail')
-                ? errorMessage.detail
-                : errorMessage,
+            errorMessage,
             [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
             { cancelable: false },
         );
     } catch (_) {
         Alert.alert(
             'Error',
-            errorMessage.hasOwnProperty('detail')
-                ? errorMessage.detail
-                : 'Unknown Error',
+            'Unknown Error',
             [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
             { cancelable: false },
         );
