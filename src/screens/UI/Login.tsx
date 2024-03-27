@@ -13,7 +13,7 @@ import {
     HomeScreenName,
     RegisterScreenName,
 } from '../../constants/constants.tsx';
-import { __handleLogin } from '../../utils/AccountsLogic.tsx';
+import { __handleLogin } from '../Logic/Login.tsx';
 
 export const Login = () => {
     const [email, setEmail] = useState('');
@@ -22,7 +22,7 @@ export const Login = () => {
 
     const handleLogin = async () => {
         const result = await __handleLogin(email, password);
-        if (result.access_granted) {
+        if (result) {
             // Use the tokens in your API calls
             navigation.reset({
                 index: 0,

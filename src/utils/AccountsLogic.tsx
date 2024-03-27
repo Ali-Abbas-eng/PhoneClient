@@ -53,24 +53,6 @@ export const __tokenAuthentication = async () => {
     // If the tokens exist, return them
     return !!(tokens.access && tokens.refresh);
 };
-export const __handleLogin = async (email: string, password: string) => {
-    try {
-        const response = await axios.post(LoginAPITokenEndpoint, {
-            username: email,
-            password: password,
-        });
-        // Save the tokens in your state or in AsyncStorage
-        const { access, refresh } = response.data;
-        await __removeTokens();
-        await storeTokens(access, refresh);
-        return { access_granted: true };
-    } catch (error) {
-        return {
-            access_granted: false,
-            error: __handleServerAccessError(error),
-        };
-    }
-};
 
 export const __handleSignUp = async (
     name: string,
