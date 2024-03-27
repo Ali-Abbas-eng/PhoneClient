@@ -65,15 +65,26 @@ export const __handleServerAccessError = (error: unknown) => {
     } else {
         errorMessage = axiosError.message;
     }
+    try {
+        Alert.alert(
+            'Error',
+            errorMessage.hasOwnProperty('detail')
+                ? errorMessage.detail
+                : errorMessage,
+            [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+            { cancelable: false },
+        );
+    } catch (_) {
+        Alert.alert(
+            'Error',
+            errorMessage.hasOwnProperty('detail')
+                ? errorMessage.detail
+                : 'Unknown Error',
+            [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+            { cancelable: false },
+        );
+    }
 
-    Alert.alert(
-        'Error',
-        errorMessage.hasOwnProperty('detail')
-            ? errorMessage.detail
-            : errorMessage,
-        [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
-        { cancelable: false },
-    );
     return errorMessage;
 };
 

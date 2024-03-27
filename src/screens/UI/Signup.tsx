@@ -8,14 +8,13 @@ import {
     Image,
 } from 'react-native';
 import { styles } from '../../styles/styels.tsx';
-import { HomeScreenName, LoginScreenName, ScreenNames } from '../../constants/constants.tsx';
+import { LoginScreenName, ScreenNames } from '../../constants/constants.tsx';
 import {
-    __handleLogin,
     __handleServerAccessError,
-    __handleSignUp,
     __removeTokens,
 } from '../../utils/AccountsLogic.tsx';
 import { useNavigation } from '@react-navigation/native';
+import { __handleSignUp } from '../Logic/Signup.tsx';
 
 export const Signup = () => {
     const [name, setName] = useState('');
@@ -27,28 +26,22 @@ export const Signup = () => {
 
     const handleSignUp = async () => {
         await __removeTokens();
-        __handleSignUp(name, email, password, confirmPassword, phoneNumber)
-            .then((response: any) => {
-                console.log(`Response from __handleSignUp was: ${response}`);
-                if (response) {
-                    __handleLogin(email, password)
-                        .then((result: any) => {
-                            if (result) {
-                                navigation.reset({
-                                    index: 0,
-                                    // @ts-ignore
-                                    routes: [{ name: ScreenNames.Home }],
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            __handleServerAccessError(error);
-                        });
-                }
-            })
-            .catch(error => {
-                __handleServerAccessError(error);
-            });
+        __handleSignUp(
+            name,
+            email,
+            password,
+            confirmPassword,
+            phoneNumber,
+        ).then((response: any) => {
+            console.log(`Response from __handleSignUp was: ${response}`);
+            if (response) {
+                navigation.reset({
+                    index: 0,
+                    // @ts-ignore
+                    routes: [{ name: ScreenNames.Home }],
+                });
+            }
+        });
     };
 
     return (
