@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { validatePassword } from './informationValidators.tsx';
 import {
-    LoginAPITokenEndpoint, RefreshTokenEndpoint,
+    RefreshTokenEndpoint,
     RegisterEndpoint,
 } from '../constants/constants.tsx';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -54,34 +54,6 @@ export const __tokenAuthentication = async () => {
     return !!(tokens.access && tokens.refresh);
 };
 
-export const __handleSignUp = async (
-    name: string,
-    email: string,
-    password: string,
-    confirmPassword: string,
-    phoneNumber: string,
-) => {
-    const validationMessage = validatePassword(password, confirmPassword);
-    if (validationMessage !== 'SUCCESS') {
-        __handleServerAccessError(validationMessage);
-    }
-
-    try {
-        const response = await axios.post(RegisterEndpoint, {
-            first_name: name,
-            last_name: name,
-            email: email,
-            phone_number: phoneNumber,
-            password1: password,
-            password2: confirmPassword,
-        });
-        return response.status === 204;
-    } catch (error: unknown) {
-        __handleServerAccessError(error);
-        return false;
-    }
-};
-
 export const __handleServerAccessError = (error: unknown) => {
     const axiosError = error as AxiosError;
     let errorMessage;
@@ -98,7 +70,7 @@ export const __handleServerAccessError = (error: unknown) => {
         'Error',
         errorMessage.hasOwnProperty('detail')
             ? errorMessage.detail
-            : 'Unknown Error',
+            : errorMessage,
         [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
         { cancelable: false },
     );
