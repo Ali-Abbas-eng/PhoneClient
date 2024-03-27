@@ -15,11 +15,13 @@ export type HomeScreenProps = {
     navigation: StackNavigationProp<RootStackParamList, ScreenNames.Home>;
 };
 
-type RootStackParamList = {
+export type RootStackParamList = {
     [ScreenNames.Home]: undefined;
     [ScreenNames.Session]: { session: Session };
     [ScreenNames.Setups]: { sessions: Session[] };
     [ScreenNames.Login]: undefined;
+    [ScreenNames.Profile]: undefined;
+    [ScreenNames.Signup]: undefined;
 };
 
 export type SessionScreenRouteProp = RouteProp<
