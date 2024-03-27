@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { validatePassword } from './informationValidators.tsx';
 import {
-    LoginAPITokenEndpoint, RefreshTokenEndpoint,
+    RefreshTokenEndpoint,
     RegisterEndpoint,
 } from '../constants/constants.tsx';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -53,52 +53,6 @@ export const __tokenAuthentication = async () => {
     // If the tokens exist, return them
     return !!(tokens.access && tokens.refresh);
 };
-export const __handleLogin = async (email: string, password: string) => {
-    try {
-        const response = await axios.post(LoginAPITokenEndpoint, {
-            username: email,
-            password: password,
-        });
-        // Save the tokens in your state or in AsyncStorage
-        const { access, refresh } = response.data;
-        await __removeTokens();
-        await storeTokens(access, refresh);
-        return { access_granted: true };
-    } catch (error) {
-        return {
-            access_granted: false,
-            error: __handleServerAccessError(error),
-        };
-    }
-};
-
-export const __handleSignUp = async (
-    name: string,
-    email: string,
-    password: string,
-    confirmPassword: string,
-    phoneNumber: string,
-) => {
-    const validationMessage = validatePassword(password, confirmPassword);
-    if (validationMessage !== 'SUCCESS') {
-        __handleServerAccessError(validationMessage);
-    }
-
-    try {
-        const response = await axios.post(RegisterEndpoint, {
-            first_name: name,
-            last_name: name,
-            email: email,
-            phone_number: phoneNumber,
-            password1: password,
-            password2: confirmPassword,
-        });
-        return response.status === 204;
-    } catch (error: unknown) {
-        __handleServerAccessError(error);
-        return false;
-    }
-};
 
 export const __handleServerAccessError = (error: unknown) => {
     const axiosError = error as AxiosError;
@@ -111,15 +65,26 @@ export const __handleServerAccessError = (error: unknown) => {
     } else {
         errorMessage = axiosError.message;
     }
+    try {
+        Alert.alert(
+            'Error',
+            errorMessage.hasOwnProperty('detail')
+                ? errorMessage.detail
+                : errorMessage,
+            [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+            { cancelable: false },
+        );
+    } catch (_) {
+        Alert.alert(
+            'Error',
+            errorMessage.hasOwnProperty('detail')
+                ? errorMessage.detail
+                : 'Unknown Error',
+            [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+            { cancelable: false },
+        );
+    }
 
-    Alert.alert(
-        'Error',
-        errorMessage.hasOwnProperty('detail')
-            ? errorMessage.detail
-            : 'Unknown Error',
-        [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
-        { cancelable: false },
-    );
     return errorMessage;
 };
 
@@ -135,10 +100,10 @@ export const __refreshTokens = async () => {
         await __removeTokens();
         await storeTokens(access, refresh);
 
-        return { refreshed: true };
+        return true;
     } catch (error) {
         console.error(error);
         __handleServerAccessError(error);
-        return { refreshed: false };
+        return false;
     }
 };

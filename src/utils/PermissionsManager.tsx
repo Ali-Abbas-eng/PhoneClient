@@ -1,4 +1,10 @@
-import { check, Permission, PERMISSIONS, request, RESULTS } from 'react-native-permissions';
+import {
+    check,
+    Permission,
+    PERMISSIONS,
+    request,
+    RESULTS,
+} from 'react-native-permissions';
 
 export async function __requestPermissions(resource: Permission) {
     let status = await check(resource);
@@ -29,7 +35,7 @@ export async function __requestPermissions(resource: Permission) {
     return false;
 }
 
-export async function requestPermissions(resources: Array<Permission>) {
+export const requestPermissions = async (resources: Array<Permission>) => {
     if (!Array.isArray(resources)) {
         resources = [resources];
     }
@@ -44,4 +50,4 @@ export async function requestPermissions(resources: Array<Permission>) {
     );
     const results: boolean[] = await Promise.all(permissionGrantStatusArray);
     return results.every((result: boolean) => result);
-}
+};
