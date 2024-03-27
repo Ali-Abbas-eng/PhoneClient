@@ -10,7 +10,7 @@ export const LanguageCard = ({
     sessions,
 }: LanguageCardProps) => {
     return sessions.length ? (
-        <TouchableOpacity onPress={onPress}>
+        <TouchableOpacity style={styles.card} onPress={onPress}>
             <View>
                 <Image
                     source={{
