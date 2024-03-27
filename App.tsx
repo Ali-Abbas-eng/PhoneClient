@@ -8,23 +8,16 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Home } from './src/screens/Home.tsx';
-import { Signup } from './src/screens/Signup.tsx';
-import { Login } from './src/screens/Login.tsx';
-import {
-    HomeScreenName,
-    LoginScreenName,
-    ProfileScreenName,
-    RegisterScreenName,
-    ScenariosScreenName,
-    ScreenNames,
-    SessionScreenName,
-} from './src/constants/constants.tsx';
-import { Profile } from './src/screens/Profile.tsx';
-import { Session } from './src/screens/Session.tsx';
-import { Setups } from './src/screens/Setups.tsx';
+import { Home } from './src/screens/UI/Home.tsx';
+import { Signup } from './src/screens/UI/Signup.tsx';
+import { Login } from './src/screens/UI/Login.tsx';
+import { ScreenNames } from './src/constants/constants.tsx';
+import { Profile } from './src/screens/UI/Profile.tsx';
+import { Session } from './src/screens/UI/Session.tsx';
+import { Setups } from './src/screens/UI/Setups.tsx';
+import { RootStackParamList } from './src/constants/types.tsx';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App(): React.JSX.Element {
     return (
