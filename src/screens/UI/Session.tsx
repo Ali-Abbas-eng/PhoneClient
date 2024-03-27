@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import { SocketIP } from '../../constants/constants.tsx';
+import {
+    HomeScreenName,
+    ScreenNames,
+    SocketIP,
+} from '../../constants/constants.tsx';
 import { SessionScreenProps } from '../../constants/types.tsx';
 import { notifyMessage } from '../../utils/informationValidators.tsx';
-import { __requestPermissions } from '../../utils/PermissionsManager.tsx';
-
 import { initialiseWebSocket } from '../../utils/WebSocketManager.tsx';
 import { PERMISSIONS } from 'react-native-permissions';
 import { SessionManager } from '../../components/AudioRecorder.tsx';
 import { styles } from '../../styles/styels.tsx';
+import { useNavigation } from '@react-navigation/native';
+import { requestPermissions } from '../../utils/PermissionsManager.tsx';
 
 export const Session: React.FC<SessionScreenProps> = ({ route }) => {
     const [socketInitialised, setSocketInitialised] = useState(false);
@@ -18,54 +22,33 @@ export const Session: React.FC<SessionScreenProps> = ({ route }) => {
     console.log('Socket URL: ', socketURL);
     console.log('Type of Socket URL: ', typeof socketURL);
     const webSocket = useRef<WebSocket | null>(null);
+    const navigation = useNavigation();
     useEffect(() => {
-        __requestPermissions(PERMISSIONS.ANDROID.RECORD_AUDIO)
-            .then((granted: boolean) => {
-                if (granted) {
-                    webSocket.current = new WebSocket(socketURL);
-                    const result = initialiseWebSocket(webSocket);
-                    console.log('Result of initialiseWebSocket: ', result);
-                    setSocketInitialised(result.initialised);
-                } else {
-                    // TODO: Annoy user into granting permissions
-                }
-            })
-            .catch(error => {
-                notifyMessage(error);
+        const permissionGrants = requestPermissions([
+            PERMISSIONS.ANDROID.RECORD_AUDIO,
+            PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
+            PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+        ]);
+        if (!permissionGrants) {
+            notifyMessage('All permissions must be granted to start a session');
+            navigation.reset({
+                index: 0,
+                // @ts-ignore
+                routes: [{ name: HomeScreenName }],
             });
-        __requestPermissions(PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE)
-            .then((granted: boolean) => {
-                if (granted) {
-                    console.log(
-                        'Permission to write to external storage, granted',
-                    );
-                } else {
-                    // TODO: Annoy user into granting permissions
-                }
-            })
-            .catch(error => {
-                notifyMessage(error);
-            });
-        __requestPermissions(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE)
-            .then((granted: boolean) => {
-                if (granted) {
-                    console.log(
-                        'Permission to write to external storage, granted',
-                    );
-                } else {
-                    // TODO: Annoy user into granting permissions
-                }
-            })
-            .catch(error => {
-                notifyMessage(error);
-            });
+        } else {
+            webSocket.current = new WebSocket(socketURL);
+            const result = initialiseWebSocket(webSocket);
+            console.log('Result of initialiseWebSocket: ', result);
+            setSocketInitialised(result.initialised);
+        }
         return () => {
             if (webSocket.current) {
                 webSocket.current.close();
                 webSocket.current = null;
             }
         };
-    }, [socketURL]);
+    }, [navigation, socketURL]);
 
     if (!socketInitialised) {
         return (
@@ -81,4 +64,3 @@ export const Session: React.FC<SessionScreenProps> = ({ route }) => {
         </View>
     );
 };
-
