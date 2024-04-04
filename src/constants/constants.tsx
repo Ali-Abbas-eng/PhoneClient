@@ -1,10 +1,3 @@
-export const HomeScreenName = 'Home';
-export const LoginScreenName = 'Login';
-export const RegisterScreenName = 'Register';
-export const ProfileScreenName = 'Profile';
-
-export const SessionScreenName = 'Session';
-export const ScenariosScreenName = 'Scenarios';
 export enum ScreenNames {
     Home = 'Home',
     Login = 'Login',
@@ -12,6 +5,7 @@ export enum ScreenNames {
     Profile = 'Profile',
     Session = 'Session',
     Setups = 'Setups',
+    Main = 'Main',
 }
 export const HttpProtocol = 'http:';
 export const WsProtocol = 'ws:';
