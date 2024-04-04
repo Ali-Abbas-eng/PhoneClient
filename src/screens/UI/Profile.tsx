@@ -41,7 +41,7 @@ export const Profile = () => {
                             source={
                                 image
                                     ? { uri: image }
-                                    : require('../../../assets/default_profile.png')
+                                    : require('../../../assets/default_profile.jpeg')
                             }
                         />
                     </TouchableOpacity>
