@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import {
-    HomeScreenName,
     ScreenNames,
     SocketIP,
 } from '../../constants/constants.tsx';
@@ -34,7 +33,7 @@ export const Session: React.FC<SessionScreenProps> = ({ route }) => {
             navigation.reset({
                 index: 0,
                 // @ts-ignore
-                routes: [{ name: HomeScreenName }],
+                routes: [{ name: ScreenNames.Home }],
             });
         } else {
             webSocket.current = new WebSocket(socketURL);

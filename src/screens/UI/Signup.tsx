@@ -8,7 +8,7 @@ import {
     Image,
 } from 'react-native';
 import { styles } from '../../styles/styels.tsx';
-import { LoginScreenName, ScreenNames } from '../../constants/constants.tsx';
+import { ScreenNames } from '../../constants/constants.tsx';
 import {
     __handleServerAccessError,
     __removeTokens,
@@ -110,7 +110,7 @@ export const Signup = () => {
                 <TouchableOpacity
                     onPress={() => {
                         // @ts-ignore
-                        navigation.navigate(LoginScreenName);
+                        navigation.navigate(ScreenNames.Login);
                     }}
                     style={[styles.button, styles.buttonOutline]}>
                     <Text style={styles.buttonOutlineText}>Login</Text>

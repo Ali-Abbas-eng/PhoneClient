@@ -10,8 +10,7 @@ import {
 import { styles } from '../../styles/styels.tsx';
 import { useNavigation } from '@react-navigation/native';
 import {
-    HomeScreenName,
-    RegisterScreenName,
+    ScreenNames,
 } from '../../constants/constants.tsx';
 import { __handleLogin } from '../Logic/Login.tsx';
 
@@ -27,7 +26,7 @@ export const Login = () => {
             navigation.reset({
                 index: 0,
                 // @ts-ignore
-                routes: [{ name: HomeScreenName }],
+                routes: [{ name: ScreenNames.Home }],
             });
         }
     };
@@ -67,7 +66,7 @@ export const Login = () => {
                 <TouchableOpacity
                     onPress={() => {
                         //@ts-ignore
-                        navigation.navigate(RegisterScreenName);
+                        navigation.navigate(ScreenNames.Signup);
                     }}
                     style={[styles.button, styles.buttonOutline]}>
                     <Text style={styles.buttonOutlineText}>Register</Text>

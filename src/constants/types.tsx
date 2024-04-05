@@ -22,6 +22,7 @@ export type RootStackParamList = {
     [ScreenNames.Login]: undefined;
     [ScreenNames.Profile]: undefined;
     [ScreenNames.Signup]: undefined;
+    [ScreenNames.Main]: undefined;
 };
 
 export type SessionScreenRouteProp = RouteProp<
