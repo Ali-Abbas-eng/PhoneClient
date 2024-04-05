@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { Button, View } from 'react-native';
 import {
     playSound,
@@ -9,9 +9,12 @@ import {
 import WebSocket from 'react-native-websocket';
 import { sendAudio } from '../utils/WebSocketManager.tsx';
 
-export const SessionManager = ({ webSocket }: WebSocket) => {
+export const SpeakingSessionManager = ({ webSocket }: WebSocket) => {
     const [isRecording, setIsRecording] = useState(false);
     const [audioPath, setAudioPath] = useState('');
+    useEffect(() => {
+        startConversation();
+    }, []);
     const startRecordingHandler = async () => {
         if (!isRecording) {
             const result = await startRecording();
@@ -28,7 +31,6 @@ export const SessionManager = ({ webSocket }: WebSocket) => {
     const stopRecordingHandler = async () => {
         const result = await stopRecording(isRecording);
         setIsRecording(result.isRecording);
-        console.log(result);
         await sendAudio(webSocket, audioPath);
         if (result.error) {
             console.log(result.error);
@@ -39,7 +41,6 @@ export const SessionManager = ({ webSocket }: WebSocket) => {
     };
     return (
         <View>
-            <Button title="CONVERSE" onPress={startConversation} />
             <Button title="Start Recording" onPress={startRecordingHandler} />
             <Button title="Stop Recording" onPress={stopRecordingHandler} />
             <Button title="Play Audio" onPress={() => playSound(audioPath)} />

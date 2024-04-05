@@ -8,7 +8,7 @@ import { SessionScreenProps } from '../../constants/types.tsx';
 import { notifyMessage } from '../../utils/informationValidators.tsx';
 import { initialiseWebSocket } from '../../utils/WebSocketManager.tsx';
 import { PERMISSIONS } from 'react-native-permissions';
-import { SessionManager } from '../../components/AudioRecorder.tsx';
+import { SpeakingSessionManager } from '../../components/SpeakingSessionManager.tsx';
 import { styles } from '../../styles/styels.tsx';
 import { useNavigation } from '@react-navigation/native';
 import { requestPermissions } from '../../utils/PermissionsManager.tsx';
@@ -16,10 +16,7 @@ import { requestPermissions } from '../../utils/PermissionsManager.tsx';
 export const Session: React.FC<SessionScreenProps> = ({ route }) => {
     const [socketInitialised, setSocketInitialised] = useState(false);
     const { session } = route.params;
-    console.log(session);
     const socketURL = SocketIP + session.socket_url;
-    console.log('Socket URL: ', socketURL);
-    console.log('Type of Socket URL: ', typeof socketURL);
     const webSocket = useRef<WebSocket | null>(null);
     const navigation = useNavigation();
     useEffect(() => {
@@ -59,7 +56,7 @@ export const Session: React.FC<SessionScreenProps> = ({ route }) => {
 
     return (
         <View style={styles.container}>
-            <SessionManager webSocket={webSocket} />
+            <SpeakingSessionManager webSocket={webSocket} />
         </View>
     );
 };
