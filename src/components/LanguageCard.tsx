@@ -9,13 +9,12 @@ export const LanguageCard = ({
     onPress,
     sessions,
 }: LanguageCardProps) => {
+    image_url = image_url ? image_url : sessions[0].image_url
     return sessions.length ? (
         <TouchableOpacity style={styles.card} onPress={onPress}>
             <View>
                 <Image
-                    source={{
-                        uri: image_url ? image_url : sessions[0].image_url,
-                    }}
+                    source={{ uri: image_url }}
                     style={styles.background}
                 />
                 <View style={styles.overlay}>
