@@ -43,7 +43,6 @@ export const SpeakingSessionManager = ({ webSocket }: WebSocket) => {
         <View>
             <Button title="Start Recording" onPress={startRecordingHandler} />
             <Button title="Stop Recording" onPress={stopRecordingHandler} />
-            <Button title="Play Audio" onPress={() => playSound(audioPath)} />
         </View>
     );
 };
