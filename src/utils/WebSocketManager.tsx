@@ -31,7 +31,7 @@ export const initialiseWebSocket = (
         console.log('Data: ', data);
         if (data.audio) {
             let audio_final_url = ServerEndpoint + data.audio;
-            // Add the audio data to the buffer instead of playing it
+            // Add the audio data to the buffer
             audioBuffer.push(audio_final_url);
         }
     };
@@ -75,12 +75,12 @@ export async function sendAudio(
     }
 }
 
-// Function to get the audio buffer
-export function getAudioBuffer() {
-    return audioBuffer;
+// Function to get the next audio in the buffer
+export function getNextAudio() {
+    return audioBuffer.shift();
 }
 
-// Function to clear the audio buffer
-export function clearAudioBuffer() {
-    audioBuffer = [];
+// Function to check if the buffer is empty
+export function isBufferEmpty() {
+    return audioBuffer.length === 0;
 }

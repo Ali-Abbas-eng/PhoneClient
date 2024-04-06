@@ -53,5 +53,5 @@ export type LanguageCardProps = {
 
 export type SpeakingSessionManagerProps = {
     session: Session;
-    webSocket: React.MutableRefObject<WebSocket>;
+    webSocket: React.MutableRefObject<WebSocket | null>;
 };
