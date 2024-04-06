@@ -1,28 +1,48 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect } from 'react';
 import { Button, View } from 'react-native';
 import {
     playSound,
-    startRecording,
-    stopRecording,
+    startRecording as startAudioRecording,
+    stopRecording as stopAudioRecording,
 } from '../utils/AudioManager.tsx';
 import {
     sendAudio,
     initialiseWebSocket,
-    getNextAudio
+    getNextAudio,
 } from '../utils/WebSocketManager.tsx';
 import { SocketIP } from '../constants/constants.tsx';
 import {SpeakingSessionManagerProps} from "../constants/types.tsx";
-import {PERMISSIONS} from "react-native-permissions";
+import { connect } from 'react-redux';
+import {
+    startRecording,
+    stopRecording,
+    setAudioPath,
+    setWaitingForEchoResponse,
+} from '../redux/actions';
 import {requestPermissions} from "../utils/PermissionsManager.tsx";
+import {PERMISSIONS} from "react-native-permissions";
 import {notifyMessage} from "../utils/informationValidators.tsx";
 
-export const SpeakingSessionManager = ({ session, webSocket }: SpeakingSessionManagerProps) => {
-    const [isRecording, setIsRecording] = useState(false);
-    const [audioPath, setAudioPath] = useState('');
-    const [waitingForEchoResponse, setWaitingForEchoResponse] = useState(true);
+const SpeakingSessionManager = ({
+                                    session,
+                                    webSocket,
+                                    isRecording,
+                                    audioPath,
+                                    waitingForEchoResponse,
+                                    startRecording,
+                                    stopRecording,
+                                    setAudioPath,
+                                    setWaitingForEchoResponse,
+                                } : any) => {
     const socketURL = SocketIP + session.socket_url;
 
-    // request permissions clause
+    useEffect(() => {
+        webSocket.current = new WebSocket(socketURL);
+        const result = initialiseWebSocket(webSocket);
+        console.log('Result of initialiseWebSocket: ', result);
+        startConversation();
+    }, []);
+
     useEffect(() => {
         const permissionGrants = requestPermissions([
             PERMISSIONS.ANDROID.RECORD_AUDIO,
@@ -31,17 +51,9 @@ export const SpeakingSessionManager = ({ session, webSocket }: SpeakingSessionMa
         ]);
         if (!permissionGrants) {
             notifyMessage('All permissions must be granted to start a session');
-        }}, []);
-
-    // initialise websocket clause
-    useEffect(() => {
-        webSocket.current = new WebSocket(socketURL);
-        const result = initialiseWebSocket(webSocket);
-        console.log('Result of initialiseWebSocket: ', result);
-        startConversation();
+        }
     }, []);
 
-    // play audio clause
     useEffect(() => {
         if (waitingForEchoResponse) {
             let audioFile = getNextAudio();
@@ -54,8 +66,8 @@ export const SpeakingSessionManager = ({ session, webSocket }: SpeakingSessionMa
     const startRecordingHandler = async () => {
         setWaitingForEchoResponse(false);
         if (!isRecording) {
-            const result = await startRecording();
-            setIsRecording(result.isRecording);
+            const result = await startAudioRecording();
+            startRecording();
             setAudioPath(result.audioPath);
             if (result.error) {
                 console.log(result.error);
@@ -66,14 +78,15 @@ export const SpeakingSessionManager = ({ session, webSocket }: SpeakingSessionMa
     };
 
     const stopRecordingHandler = async () => {
-        const result = await stopRecording(isRecording);
-        setIsRecording(result.isRecording);
+        const result = await stopAudioRecording(isRecording);
+        stopRecording();
         await sendAudio(webSocket, audioPath);
         setWaitingForEchoResponse(true);
         if (result.error) {
             console.log(result.error);
         }
     };
+
     const startConversation = () => {
         if (webSocket.current) {
             webSocket.current.onopen = () => {
@@ -92,3 +105,18 @@ export const SpeakingSessionManager = ({ session, webSocket }: SpeakingSessionMa
         </View>
     );
 };
+
+const mapStateToProps = (state: { isRecording: boolean; audioPath: string; waitingForEchoResponse: boolean; }) => ({
+    isRecording: state.isRecording,
+    audioPath: state.audioPath,
+    waitingForEchoResponse: state.waitingForEchoResponse,
+});
+
+const mapDispatchToProps = {
+    startRecording,
+    stopRecording,
+    setAudioPath,
+    setWaitingForEchoResponse,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SpeakingSessionManager);
