@@ -1,6 +1,7 @@
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { ScreenNames } from './constants.tsx';
+import React from "react";
 
 export interface Session {
     id: number;
@@ -48,4 +49,9 @@ export type LanguageCardProps = {
     image_url?: string;
     sessions: Session[];
     onPress: () => void;
+};
+
+export type SpeakingSessionManagerProps = {
+    session: Session;
+    webSocket: React.MutableRefObject<WebSocket>;
 };

@@ -5,16 +5,22 @@ import {
     startRecording,
     stopRecording,
 } from '../utils/AudioManager.tsx';
-// @ts-ignore
-import WebSocket from 'react-native-websocket';
-import { sendAudio } from '../utils/WebSocketManager.tsx';
+import { sendAudio, initialiseWebSocket } from '../utils/WebSocketManager.tsx';
+import { SocketIP } from '../constants/constants.tsx';
+import {SpeakingSessionManagerProps} from "../constants/types.tsx";
 
-export const SpeakingSessionManager = ({ webSocket }: WebSocket) => {
+export const SpeakingSessionManager = ({ session, webSocket }: SpeakingSessionManagerProps) => {
     const [isRecording, setIsRecording] = useState(false);
     const [audioPath, setAudioPath] = useState('');
+    const socketURL = SocketIP + session.socket_url;
+
     useEffect(() => {
+        webSocket.current = new WebSocket(socketURL);
+        const result = initialiseWebSocket(webSocket);
+        console.log('Result of initialiseWebSocket: ', result);
         startConversation();
     }, []);
+
     const startRecordingHandler = async () => {
         if (!isRecording) {
             const result = await startRecording();
@@ -37,8 +43,17 @@ export const SpeakingSessionManager = ({ webSocket }: WebSocket) => {
         }
     };
     const startConversation = () => {
-        webSocket.current?.send(JSON.stringify({ start: 1 }));
+        if (webSocket.current) {
+            webSocket.current.onopen = () => {
+                console.log('Socket is open.');
+                webSocket.current?.send(JSON.stringify({ start: 1 }));
+            };
+        } else {
+            console.log('WebSocket is not open yet');
+        }
     };
+
+
     return (
         <View>
             <Button title="Start Recording" onPress={startRecordingHandler} />
