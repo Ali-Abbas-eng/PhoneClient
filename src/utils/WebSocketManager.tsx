@@ -2,7 +2,9 @@
 import WebSocket from 'react-native-websocket';
 import { ServerEndpoint } from '../constants/constants.tsx';
 import React from 'react';
-import { playSound } from './AudioManager.tsx';
+
+// Create a variable to store the audio data
+let audioBuffer: string[] = [];
 
 export const initialiseWebSocket = (
     webSocket: React.MutableRefObject<WebSocket | null>,
@@ -29,7 +31,8 @@ export const initialiseWebSocket = (
         console.log('Data: ', data);
         if (data.audio) {
             let audio_final_url = ServerEndpoint + data.audio;
-            playSound(audio_final_url);
+            // Add the audio data to the buffer instead of playing it
+            audioBuffer.push(audio_final_url);
         }
     };
     console.log(webSocket.current);
@@ -38,6 +41,7 @@ export const initialiseWebSocket = (
         initialised: initialisedSuccessfully,
     };
 };
+
 export async function sendAudio(
     webSocket: React.MutableRefObject<WebSocket>,
     audioFilePath: string,
@@ -69,4 +73,14 @@ export async function sendAudio(
     } catch (error) {
         console.error('Error sending audio: ', error);
     }
+}
+
+// Function to get the audio buffer
+export function getAudioBuffer() {
+    return audioBuffer;
+}
+
+// Function to clear the audio buffer
+export function clearAudioBuffer() {
+    audioBuffer = [];
 }
