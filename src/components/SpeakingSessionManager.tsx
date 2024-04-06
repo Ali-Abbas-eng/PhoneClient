@@ -8,7 +8,7 @@ import {
 import {
     sendAudio,
     initialiseWebSocket,
-    getNextAudio,
+    getNextAudio, isBufferEmpty,
 } from '../utils/WebSocketManager.tsx';
 import { SocketIP } from '../constants/constants.tsx';
 import {SpeakingSessionManagerProps} from "../constants/types.tsx";
@@ -60,6 +60,13 @@ const SpeakingSessionManager = ({
             if (audioFile){
                 playSound(audioFile)
             }
+            setWaitingForEchoResponse(!isBufferEmpty())
+        } else {
+            startRecordingHandler().then(
+                () => {
+                    setWaitingForEchoResponse(true);
+                }
+            );
         }
     }, [waitingForEchoResponse]);
 
@@ -72,8 +79,6 @@ const SpeakingSessionManager = ({
             if (result.error) {
                 console.log(result.error);
             }
-        } else {
-            console.log('Already recording');
         }
     };
 
@@ -100,7 +105,6 @@ const SpeakingSessionManager = ({
 
     return (
         <View>
-            <Button title="Start Recording" onPress={startRecordingHandler} />
             <Button title="Stop Recording" onPress={stopRecordingHandler} />
         </View>
     );
