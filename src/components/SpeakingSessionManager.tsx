@@ -11,7 +11,6 @@ import {
     getNextAudio, isBufferEmpty,
 } from '../utils/WebSocketManager.tsx';
 import { SocketIP } from '../constants/constants.tsx';
-import {SpeakingSessionManagerProps} from "../constants/types.tsx";
 import { connect } from 'react-redux';
 import {
     startRecording,
