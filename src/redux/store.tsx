@@ -16,6 +16,4 @@ const store = configureStore({
     preloadedState: initialState
 });
 
-console.log('Store created: ', store.getState());
-
 export default store;
