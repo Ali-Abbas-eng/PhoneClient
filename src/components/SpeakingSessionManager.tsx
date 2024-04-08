@@ -6,23 +6,28 @@ import {
     startRecording,
     stopRecording,
     setAudioPath,
-    setWaitingForEchoResponse, setEchoTurn, addReceivedAudios, removeReceivedAudio,
+    setWaitingForEchoResponse,
+    setEchoTurn,
+    addReceivedAudios,
+    removeReceivedAudio,
+    removeRecordedAudios,
+    addRecordedAudios,
 } from '../redux/actions';
 import {requestPermissions} from "../utils/PermissionsManager.tsx";
 import {PERMISSIONS} from "react-native-permissions";
 import {notifyMessage} from "../utils/informationValidators.tsx";
 import { AudioManagerAPI } from '../utils/AudioManager.tsx';
-import {getNextAudio, initialiseWebSocket, isBufferEmpty} from "../utils/WebSocketManager.tsx";
+import {initialiseWebSocket, sendAudio} from "../utils/WebSocketManager.tsx";
 
 const SpeakingSessionManager = ({
                                     session,
                                     webSocket,
-                                    waitingForEchoResponse,
                                     receivedAudios,
                                     echoTurn,
                                     setWaitingForEchoResponse,
+                                    addReceivedAudios,
                                     removeReceivedAudio,
-                                    addReceivedAudios
+    setEchoTurn,
                                 } : any) => {
     const audioManager = new AudioManagerAPI();
     const socketURL = SocketIP + session.socket_url;
@@ -47,7 +52,6 @@ const SpeakingSessionManager = ({
             // Dispatch the action to add the audio path to the global state
             addReceivedAudios(audioPath);
         });
-        console.log('Result of initialiseWebSocket: ', result);
         startConversation();
     }, []);
 
@@ -60,6 +64,7 @@ const SpeakingSessionManager = ({
                     removeReceivedAudio(audioFile);
                     setSessionInitialised(true);
                     setEchoTurn(false)
+                    audioManager.isPlayingSwitch();
                 }
             );
         } else if (echoTurn && sessionInitialised) { // moving forward, echo will be sending two messages
@@ -70,8 +75,20 @@ const SpeakingSessionManager = ({
 
     useEffect(() => {
         // Handle the one-off case where echo starts the conversation with one message
-        if (!echoTurn) { // it's the user's turn
-
+        if (!echoTurn && !audioManager.isPlaying()) { // it's the user's turn
+            console.log("It is not Echo's turn, we must record....")
+            audioManager.audioRecordInference(5, 60, 3).then(
+                (fullAudioInfo) => {
+                    setWaitingForEchoResponse(true);
+                    audioManager.isRecordingChunkSwitch();
+                    sendAudio(webSocket, fullAudioInfo.audioPath).then(() => {
+                        console.log('Complete Audio Sent')
+                        setEchoTurn(true);
+                    })
+                }
+            ).catch((error) => {
+                console.error(error);
+            });
             // TODO: prepare multi-stage request
             /*
             * record two audios
@@ -80,20 +97,16 @@ const SpeakingSessionManager = ({
             *   change echoTurn to true
             */
         }
-    }, [echoTurn, receivedAudios]);
-
+    }, [echoTurn]);
 
     const startConversation = () => {
         if (webSocket.current) {
             webSocket.current.onopen = () => {
-                console.log('Socket is open.');
                 webSocket.current?.send(JSON.stringify({ start: 1 }));
             };
         } else {
-            console.log('WebSocket is not open yet');
         }
     };
-    console.log('SpeakingSessionManager initialised successfully');
     return (
         <View>
             <Button title="Stop Recording" onPress={audioManager.stopRecording} disabled={recordability} />
@@ -117,6 +130,8 @@ const mapDispatchToProps = {
     setEchoTurn,
     addReceivedAudios,
     removeReceivedAudio,
+    addRecordedAudios,
+    removeRecordedAudios,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SpeakingSessionManager);
