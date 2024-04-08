@@ -6,7 +6,6 @@ import {
     startRecording,
     stopRecording,
     setAudioPath,
-    setWaitingForEchoResponse,
     setEchoTurn,
     addReceivedAudios,
     removeReceivedAudio,
@@ -26,12 +25,16 @@ const SpeakingSessionManager = ({
     webSocket,
     receivedAudios,
     echoTurn,
-    setWaitingForEchoResponse,
     addReceivedAudios,
     removeReceivedAudio,
     setEchoTurn,
 }: any) => {
     const audioManager = React.useMemo(() => new AudioManagerAPI(), []);
+    audioManager.registerOnStopRecordingCallback(async (filePath: string) => {
+        await sendAudio(webSocket, filePath);
+        console.log(`File at: ${filePath} is being sent to Echo server`);
+        // TODO: FIX: recorded file is not reachable.
+    });
     const socketURL = SocketIP + session.socket_url;
     const [sessionInitialised, setSessionInitialised] = useState(false);
 
@@ -86,9 +89,8 @@ const SpeakingSessionManager = ({
             // it's the user's turn
             console.log("It is not Echo's turn, we must record....");
             audioManager
-                .startRecording(5, 60, 3)
+                .startRecording(5, 10, 3)
                 .then(fullAudioInfo => {
-                    setWaitingForEchoResponse(true);
                     sendAudio(webSocket, fullAudioInfo.audioPath).then(() => {
                         console.log('Complete Audio Sent');
                         setEchoTurn(true);
@@ -106,21 +108,13 @@ const SpeakingSessionManager = ({
              *   change echoTurn to true
              */
         }
-    }, [
-        audioManager,
-        echoTurn,
-        setEchoTurn,
-        setWaitingForEchoResponse,
-        webSocket,
-    ]);
+    }, [audioManager, echoTurn, setEchoTurn, webSocket]);
 
     return (
         <View>
             <Button
                 title="Stop Recording"
-                onPress={async () => {
-                    await audioManager.stopRecording(false);
-                }}
+                onPress={() => {}}
                 disabled={!audioManager.isStoppable()}
             />
         </View>
@@ -145,7 +139,6 @@ const mapDispatchToProps = {
     startRecording,
     stopRecording,
     setAudioPath,
-    setWaitingForEchoResponse,
     setEchoTurn,
     addReceivedAudios,
     removeReceivedAudio,
