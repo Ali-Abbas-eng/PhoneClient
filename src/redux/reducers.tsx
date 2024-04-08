@@ -17,6 +17,8 @@ const rootReducer = (state = initialState, action: { type: any; payload: any; })
             return { ...state, audioPath: action.payload };
         case 'SET_WAITING_FOR_ECHO_RESPONSE':
             return { ...state, waitingForEchoResponse: action.payload };
+        case 'SET_ECHO_TURN':
+            return { ...state, echoTurn: action.payload };
         case 'ADD_AUDIO_TO_QUEUE':
             console.log("ADD_AUDIO_TO_QUEUE", action.payload);
             return { ...state, receivedAudios: [...state.receivedAudios, action.payload]}
