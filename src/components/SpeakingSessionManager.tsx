@@ -24,16 +24,8 @@ const SpeakingSessionManager = ({
                                 } : any) => {
     const audioManager = new AudioManagerAPI();
     const socketURL = SocketIP + session.socket_url;
-    useEffect(() => {
-        webSocket.current = new WebSocket(socketURL);
-        const result = initialiseWebSocket(webSocket, (audioPath) => {
-            // Dispatch the action to add the audio path to the global state
-            addReceivedAudios(audioPath);
-        });
-        console.log('Result of initialiseWebSocket: ', result);
-        startConversation();
-    }, []);
 
+    // make sure all the required permissions are granted.
     useEffect(() => {
         const permissionGrants = requestPermissions([
             PERMISSIONS.ANDROID.RECORD_AUDIO,
@@ -43,6 +35,16 @@ const SpeakingSessionManager = ({
         if (!permissionGrants) {
             notifyMessage('All permissions must be granted to start a session');
         }
+    }, []);
+
+    useEffect(() => {
+        webSocket.current = new WebSocket(socketURL);
+        const result = initialiseWebSocket(webSocket, (audioPath) => {
+            // Dispatch the action to add the audio path to the global state
+            addReceivedAudios(audioPath);
+        });
+        console.log('Result of initialiseWebSocket: ', result);
+        startConversation();
     }, []);
 
     useEffect(() => {
