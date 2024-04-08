@@ -19,11 +19,15 @@ const SpeakingSessionManager = ({
                                     webSocket,
                                     waitingForEchoResponse,
                                     receivedAudios,
+                                    echoTurn,
                                     setWaitingForEchoResponse,
                                     removeReceivedAudio,
+                                    addReceivedAudios
                                 } : any) => {
     const audioManager = new AudioManagerAPI();
     const socketURL = SocketIP + session.socket_url;
+    const [sessionInitialised, setSessionInitialised] = useState(false);
+    const [recordability, setRecordability] = useState(false);
 
     // make sure all the required permissions are granted.
     useEffect(() => {
@@ -48,30 +52,22 @@ const SpeakingSessionManager = ({
     }, []);
 
     useEffect(() => {
-        console.log(receivedAudios)
-        if (waitingForEchoResponse && receivedAudios.length > 0) {
+        // Handle the one-off case where echo starts the conversation with one message
+        if (echoTurn && !sessionInitialised) {
             let audioFile = receivedAudios[0];
-            audioManager.playSound(audioFile);
-            removeReceivedAudio(audioFile);
-            setWaitingForEchoResponse(receivedAudios.length > 1);
-        } else if (!waitingForEchoResponse && !audioManager.isRecording()){
-            console.log('Trying to start recording');
-            audioManager.audioRecordInference(5, 60, 3).then(
-                (fullAudioInfo) => {
-                    setWaitingForEchoResponse(true);
-                    audioManager.isRecordingSwitch();
-                    addReceivedAudios(fullAudioInfo.audioPath);
+            audioManager.playSound(audioFile).then(
+                () => {
+                    removeReceivedAudio(audioFile);
+                    setSessionInitialised(true);
+                    setEchoTurn(false)
                 }
             );
-            audioManager.audioRecordInference(5, 60, null).then(
-                (chunkAudioInfo) => {
-                    setWaitingForEchoResponse(true);
-                    audioManager.isRecordingChunkSwitch();
-                    addReceivedAudios(chunkAudioInfo.audioPath);
-                }
-            );
+        } else if (echoTurn && sessionInitialised) { // moving forward, echo will be sending two messages
+            // TODO: two stage audio send/receive functionality
+            console.log('Not Implemented yet');
         }
-    }, [waitingForEchoResponse, receivedAudios]);
+    }, [echoTurn, receivedAudios]);
+
 
     const startConversation = () => {
         if (webSocket.current) {
@@ -86,16 +82,17 @@ const SpeakingSessionManager = ({
     console.log('SpeakingSessionManager initialised successfully');
     return (
         <View>
-            <Button title="Stop Recording" onPress={audioManager.stopRecording} disabled={audioManager.isStoppable()} />
+            <Button title="Stop Recording" onPress={audioManager.stopRecording} disabled={recordability} />
         </View>
     );
 };
 
-const mapStateToProps = (state: { isRecording: boolean; audioPath: string; waitingForEchoResponse: boolean; receivedAudios: string[]; }) => ({
+const mapStateToProps = (state: { isRecording: boolean; audioPath: string; waitingForEchoResponse: boolean; receivedAudios: string[]; echoTurn: boolean; }) => ({
     isRecording: state.isRecording,
     audioPath: state.audioPath,
     waitingForEchoResponse: state.waitingForEchoResponse,
     receivedAudios: state.receivedAudios,
+    echoTurn: state.echoTurn
 });
 
 const mapDispatchToProps = {
