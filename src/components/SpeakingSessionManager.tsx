@@ -86,7 +86,7 @@ const SpeakingSessionManager = ({
             // it's the user's turn
             console.log("It is not Echo's turn, we must record....");
             audioManager
-                .startRecording(5, 60)
+                .startRecording(5, 60, 3)
                 .then(fullAudioInfo => {
                     setWaitingForEchoResponse(true);
                     sendAudio(webSocket, fullAudioInfo.audioPath).then(() => {
@@ -113,16 +113,15 @@ const SpeakingSessionManager = ({
         setWaitingForEchoResponse,
         webSocket,
     ]);
+
     return (
         <View>
             <Button
                 title="Stop Recording"
-                onPress={audioManager.stopRecording}
-                disabled={
-                    (audioManager.isRecording() &&
-                        !audioManager.isStoppable()) ||
-                    !audioManager.isRecording()
-                }
+                onPress={async () => {
+                    await audioManager.stopRecording(false);
+                }}
+                disabled={!audioManager.isStoppable()}
             />
         </View>
     );

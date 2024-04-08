@@ -5,7 +5,7 @@ import AudioRecorderPlayer, {
     AVEncodingOption,
     AVModeIOSOption,
 } from 'react-native-audio-recorder-player';
-import { DocumentDirectoryPath, downloadFile } from 'react-native-fs';
+import { DocumentDirectoryPath } from 'react-native-fs';
 import Sound from 'react-native-sound';
 
 export class AudioManagerAPI {
@@ -55,37 +55,59 @@ export class AudioManagerAPI {
     async startRecording(
         MINIMUM_AUDIO_LENGTH: number,
         MAXIMUM_AUDIO_LENGTH: number,
+        STAGING_AUDIO_LENGTH: number,
     ) {
         console.log('Started Recording...');
-        const filePath = this.generateAudioFilePaths().full;
+        const filePaths = this.generateAudioFilePaths();
+        const filePath = filePaths.full;
+        const stagingFilePath = filePaths.chunk;
         this.isRecordingSwitch();
         try {
             const uri = await this.audioRecorderPlayer.startRecorder(
-                filePath,
+                stagingFilePath,
                 this.audioSet,
                 this.meteringEnabled,
             );
 
+            // Save a chunk of the recording after STAGING_AUDIO_LENGTH seconds
+            setTimeout(async () => {
+                if (this.__isRecording) {
+                    await this.stopRecording(true);
+                    await this.audioRecorderPlayer.startRecorder(
+                        filePath,
+                        this.audioSet,
+                        this.meteringEnabled,
+                    );
+                }
+            }, STAGING_AUDIO_LENGTH * 1000);
+
             // Allow user to stop recording after MINIMUM_AUDIO_LENGTH seconds
             setTimeout(() => {
-                this.__isStoppable = true;
+                this.isStoppableSwitch();
             }, MINIMUM_AUDIO_LENGTH * 1000);
 
             // Stop recording automatically after MAXIMUM_AUDIO_LENGTH seconds
             setTimeout(() => {
                 if (this.__isRecording) {
-                    this.stopRecording();
+                    this.stopRecording(false); // stop recording the original audio
                 }
             }, MAXIMUM_AUDIO_LENGTH * 1000);
 
-            return { isRecording: true, audioPath: uri };
+            return {
+                audioPath: uri,
+                stagingFilePath: stagingFilePath,
+            };
         } catch (error) {
             console.log('Uh-oh! Failed to start recording:', error);
-            return { isRecording: false, audioPath: '', error: error };
+            return {
+                audioPath: '',
+                stagingFilePath: '',
+                error: error,
+            };
         }
     }
 
-    async stopRecording() {
+    async stopRecording(isChunk: boolean) {
         if (this.isRecording() && this.isStoppable()) {
             try {
                 await this.audioRecorderPlayer.stopRecorder();
@@ -93,8 +115,10 @@ export class AudioManagerAPI {
             } catch (error) {
                 console.log('Oops! Failed to stop recording:', error);
             }
-            this.isRecordingSwitch();
-            this.isStoppableSwitch();
+            if (!isChunk) {
+                this.isRecordingSwitch();
+                this.isStoppableSwitch();
+            }
         }
     }
 
