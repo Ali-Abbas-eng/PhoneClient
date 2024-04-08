@@ -31,7 +31,7 @@ const SpeakingSessionManager = ({
     removeReceivedAudio,
     setEchoTurn,
 }: any) => {
-    const audioManager = new AudioManagerAPI();
+    const audioManager = React.useMemo(() => new AudioManagerAPI(), []);
     const socketURL = SocketIP + session.socket_url;
     const [sessionInitialised, setSessionInitialised] = useState(false);
 
@@ -86,14 +86,14 @@ const SpeakingSessionManager = ({
             // it's the user's turn
             console.log("It is not Echo's turn, we must record....");
             audioManager
-                .audioRecordInference(5, 60, 3)
+                .startRecording(5, 60)
                 .then(fullAudioInfo => {
                     setWaitingForEchoResponse(true);
-                    audioManager.isRecordingChunkSwitch();
                     sendAudio(webSocket, fullAudioInfo.audioPath).then(() => {
                         console.log('Complete Audio Sent');
                         setEchoTurn(true);
                     });
+                    console.log('Playing Recorded Audio....');
                 })
                 .catch(error => {
                     console.error(error);
@@ -118,7 +118,11 @@ const SpeakingSessionManager = ({
             <Button
                 title="Stop Recording"
                 onPress={audioManager.stopRecording}
-                disabled={audioManager.isStoppable()}
+                disabled={
+                    (audioManager.isRecording() &&
+                        !audioManager.isStoppable()) ||
+                    !audioManager.isRecording()
+                }
             />
         </View>
     );
