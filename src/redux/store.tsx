@@ -1,6 +1,6 @@
 import { createStore } from 'redux';
 import rootReducer from './reducers';
-import {configureStore} from "@reduxjs/toolkit";
+import { configureStore } from '@reduxjs/toolkit';
 
 const initialState = {
     isRecording: false,
@@ -13,7 +13,7 @@ const initialState = {
 const store = configureStore({
     // @ts-ignore
     reducer: rootReducer,
-    preloadedState: initialState
+    preloadedState: initialState,
 });
 
 export default store;

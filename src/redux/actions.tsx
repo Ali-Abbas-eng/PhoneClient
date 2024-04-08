@@ -20,7 +20,7 @@ export const setWaitingForEchoResponse = (waiting: any) => {
 
 export const addReceivedAudios = (audioPath: string) => {
     return { type: 'ADD_AUDIO_TO_QUEUE', payload: audioPath };
-}
+};
 
 export const removeReceivedAudio = (audioPath: string) => {
     return { type: 'REMOVE_AUDIO_FROM_QUEUE', payload: audioPath };

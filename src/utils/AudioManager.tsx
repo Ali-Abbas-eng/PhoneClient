@@ -13,13 +13,14 @@ export class AudioManagerAPI {
     private audioChunkRecorderPlayer: AudioRecorderPlayer;
     private __isRecording: boolean;
     private __isRecordingChunk: boolean;
+    private __isPlaying: boolean;
     private audioSet: {
         AudioEncoderAndroid: AudioEncoderAndroidType;
         AVNumberOfChannelsKeyIOS: number;
         AVFormatIDKeyIOS: AVEncodingOption;
         AudioSourceAndroid: AudioSourceAndroidType;
         AVModeIOS: AVModeIOSOption;
-        AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType
+        AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType;
     };
     private audioCount: number;
     private __isStoppable: boolean;
@@ -41,36 +42,44 @@ export class AudioManagerAPI {
             AVFormatIDKeyIOS: AVEncodingOption.aac,
         };
         this.__isStoppable = false;
+        this.__isPlaying = false;
     }
 
     generateAudioFilePaths() {
-        const baseName = `${Math.floor(new Date().getTime() / 1000)}_${this.audioCount}`;
+        const baseName = `${Math.floor(new Date().getTime() / 1000)}_${
+            this.audioCount
+        }`;
         const audioFiles = {
             full: `${DocumentDirectoryPath}/${baseName}.aac`,
             chunk: `${DocumentDirectoryPath}/${baseName}_chunk.aac`,
-        }
+        };
         return audioFiles;
     }
 
-    async audioRecordInference(MINIMUM_AUDIO_LENGTH: number,
-                               MAXIMUM_AUDIO_LENGTH: number,
-                               AUDIO_CHUNK_LENGTH: number | null) {
+    async audioRecordInference(
+        MINIMUM_AUDIO_LENGTH: number,
+        MAXIMUM_AUDIO_LENGTH: number,
+        AUDIO_CHUNK_LENGTH: number | null,
+    ) {
         this.__isRecording = true;
         let result;
-        if (AUDIO_CHUNK_LENGTH){
+        if (AUDIO_CHUNK_LENGTH) {
             // We are recording a chunk so that we can get a fast response
             result = await this.startChunkRecording(AUDIO_CHUNK_LENGTH);
         } else {
             // We are recording the full audio
-            result = await this.startFullRecording(MINIMUM_AUDIO_LENGTH, MAXIMUM_AUDIO_LENGTH);
+            result = await this.startFullRecording(
+                MINIMUM_AUDIO_LENGTH,
+                MAXIMUM_AUDIO_LENGTH,
+            );
         }
         return result;
     }
 
     // Function to start recording a chunk of audio
-    async startChunkRecording(chunkLength: number){
+    async startChunkRecording(chunkLength: number) {
         console.log('Starting chunk recording...');
-        const filePath = this.generateAudioFilePaths()["chunk"]
+        const filePath = this.generateAudioFilePaths().chunk;
         try {
             const uri = await this.audioChunkRecorderPlayer.startRecorder(
                 filePath,
@@ -96,9 +105,12 @@ export class AudioManagerAPI {
         }
     }
 
-    async startFullRecording(MINIMUM_AUDIO_LENGTH: number, MAXIMUM_AUDIO_LENGTH: number){
-        console.log('Started Recording...')
-        const filePath = this.generateAudioFilePaths()["full"]
+    async startFullRecording(
+        MINIMUM_AUDIO_LENGTH: number,
+        MAXIMUM_AUDIO_LENGTH: number,
+    ) {
+        console.log('Started Recording...');
+        const filePath = this.generateAudioFilePaths().full;
         try {
             const uri = await this.audioRecorderPlayer.startRecorder(
                 filePath,
@@ -130,7 +142,7 @@ export class AudioManagerAPI {
         if (this.__isRecording && this.isStoppable()) {
             try {
                 await this.audioRecorderPlayer.stopRecorder();
-                console.log('Stopped Recording!')
+                console.log('Stopped Recording!');
                 this.__isRecording = false;
                 this.__isStoppable = false;
             } catch (error) {
@@ -140,6 +152,7 @@ export class AudioManagerAPI {
     }
 
     async playSound(soundFile: string) {
+        this.isPlayingSwitch();
         let sound = new Sound(soundFile, Sound.MAIN_BUNDLE, (error: any) => {
             if (error) {
                 console.log('failed to load the sound', error);
@@ -148,14 +161,16 @@ export class AudioManagerAPI {
                     if (success) {
                         console.log('successfully finished playing');
                     } else {
-                        console.log('playback failed due to audio decoding errors');
+                        console.log(
+                            'playback failed due to audio decoding errors',
+                        );
                     }
                 });
             }
         });
     }
 
-    isStoppable(){
+    isStoppable() {
         return this.__isStoppable;
     }
 
@@ -163,16 +178,22 @@ export class AudioManagerAPI {
         return this.__isRecording;
     }
 
-    isRecordingChunk(){
-        return this.__isRecordingChunk
+    isRecordingChunk() {
+        return this.__isRecordingChunk;
     }
 
-    isRecordingSwitch(){
+    isRecordingSwitch() {
         this.__isRecording = !this.__isRecording;
     }
 
     isRecordingChunkSwitch() {
         this.__isRecordingChunk = !this.__isRecordingChunk;
     }
-}
 
+    isPlaying() {
+        return this.__isPlaying;
+    }
+    isPlayingSwitch() {
+        this.__isPlaying = !this.__isPlaying;
+    }
+}

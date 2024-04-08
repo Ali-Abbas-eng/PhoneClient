@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, View } from 'react-native';
 import { SocketIP } from '../constants/constants.tsx';
 import { connect } from 'react-redux';
@@ -10,29 +10,30 @@ import {
     setEchoTurn,
     addReceivedAudios,
     removeReceivedAudio,
-    removeRecordedAudios,
-    addRecordedAudios,
 } from '../redux/actions';
-import {requestPermissions} from "../utils/PermissionsManager.tsx";
-import {PERMISSIONS} from "react-native-permissions";
-import {notifyMessage} from "../utils/informationValidators.tsx";
+import { requestPermissions } from '../utils/PermissionsManager.tsx';
+import { PERMISSIONS } from 'react-native-permissions';
+import { notifyMessage } from '../utils/informationValidators.tsx';
 import { AudioManagerAPI } from '../utils/AudioManager.tsx';
-import {initialiseWebSocket, sendAudio} from "../utils/WebSocketManager.tsx";
+import {
+    initialiseWebSocket,
+    sendAudio,
+    startConversation,
+} from '../utils/WebSocketManager.tsx';
 
 const SpeakingSessionManager = ({
-                                    session,
-                                    webSocket,
-                                    receivedAudios,
-                                    echoTurn,
-                                    setWaitingForEchoResponse,
-                                    addReceivedAudios,
-                                    removeReceivedAudio,
+    session,
+    webSocket,
+    receivedAudios,
+    echoTurn,
+    setWaitingForEchoResponse,
+    addReceivedAudios,
+    removeReceivedAudio,
     setEchoTurn,
-                                } : any) => {
+}: any) => {
     const audioManager = new AudioManagerAPI();
     const socketURL = SocketIP + session.socket_url;
     const [sessionInitialised, setSessionInitialised] = useState(false);
-    const [recordability, setRecordability] = useState(false);
 
     // make sure all the required permissions are granted.
     useEffect(() => {
@@ -48,78 +49,93 @@ const SpeakingSessionManager = ({
 
     useEffect(() => {
         webSocket.current = new WebSocket(socketURL);
-        const result = initialiseWebSocket(webSocket, (audioPath) => {
+        initialiseWebSocket(webSocket, audioPath => {
             // Dispatch the action to add the audio path to the global state
             addReceivedAudios(audioPath);
         });
-        startConversation();
-    }, []);
+        startConversation(webSocket);
+    }, [addReceivedAudios, socketURL, webSocket]);
 
     useEffect(() => {
         // Handle the one-off case where echo starts the conversation with one message
         if (echoTurn && !sessionInitialised) {
             let audioFile = receivedAudios[0];
-            audioManager.playSound(audioFile).then(
-                () => {
-                    removeReceivedAudio(audioFile);
-                    setSessionInitialised(true);
-                    setEchoTurn(false)
-                    audioManager.isPlayingSwitch();
-                }
-            );
-        } else if (echoTurn && sessionInitialised) { // moving forward, echo will be sending two messages
+            audioManager.playSound(audioFile).then(() => {
+                removeReceivedAudio(audioFile);
+                setSessionInitialised(true);
+                setEchoTurn(false);
+                audioManager.isPlayingSwitch();
+            });
+        } else if (echoTurn && sessionInitialised) {
+            // moving forward, echo will be sending two messages
             // TODO: two stage audio send/receive functionality
             console.log('Not Implemented yet');
         }
-    }, [echoTurn, receivedAudios]);
+    }, [
+        audioManager,
+        echoTurn,
+        receivedAudios,
+        removeReceivedAudio,
+        sessionInitialised,
+        setEchoTurn,
+    ]);
 
     useEffect(() => {
         // Handle the one-off case where echo starts the conversation with one message
-        if (!echoTurn && !audioManager.isPlaying()) { // it's the user's turn
-            console.log("It is not Echo's turn, we must record....")
-            audioManager.audioRecordInference(5, 60, 3).then(
-                (fullAudioInfo) => {
+        if (!echoTurn && !audioManager.isPlaying()) {
+            // it's the user's turn
+            console.log("It is not Echo's turn, we must record....");
+            audioManager
+                .audioRecordInference(5, 60, 3)
+                .then(fullAudioInfo => {
                     setWaitingForEchoResponse(true);
                     audioManager.isRecordingChunkSwitch();
                     sendAudio(webSocket, fullAudioInfo.audioPath).then(() => {
-                        console.log('Complete Audio Sent')
+                        console.log('Complete Audio Sent');
                         setEchoTurn(true);
-                    })
-                }
-            ).catch((error) => {
-                console.error(error);
-            });
+                    });
+                })
+                .catch(error => {
+                    console.error(error);
+                });
             // TODO: prepare multi-stage request
             /*
-            * record two audios
-            * send each one immediately when it's done recording
-            * when both audios are sent:
-            *   change echoTurn to true
-            */
+             * record two audios
+             * send each one immediately when it's done recording
+             * when both audios are sent:
+             *   change echoTurn to true
+             */
         }
-    }, [echoTurn]);
-
-    const startConversation = () => {
-        if (webSocket.current) {
-            webSocket.current.onopen = () => {
-                webSocket.current?.send(JSON.stringify({ start: 1 }));
-            };
-        } else {
-        }
-    };
+    }, [
+        audioManager,
+        echoTurn,
+        setEchoTurn,
+        setWaitingForEchoResponse,
+        webSocket,
+    ]);
     return (
         <View>
-            <Button title="Stop Recording" onPress={audioManager.stopRecording} disabled={recordability} />
+            <Button
+                title="Stop Recording"
+                onPress={audioManager.stopRecording}
+                disabled={audioManager.isStoppable()}
+            />
         </View>
     );
 };
 
-const mapStateToProps = (state: { isRecording: boolean; audioPath: string; waitingForEchoResponse: boolean; receivedAudios: string[]; echoTurn: boolean; }) => ({
+const mapStateToProps = (state: {
+    isRecording: boolean;
+    audioPath: string;
+    waitingForEchoResponse: boolean;
+    receivedAudios: string[];
+    echoTurn: boolean;
+}) => ({
     isRecording: state.isRecording,
     audioPath: state.audioPath,
     waitingForEchoResponse: state.waitingForEchoResponse,
     receivedAudios: state.receivedAudios,
-    echoTurn: state.echoTurn
+    echoTurn: state.echoTurn,
 });
 
 const mapDispatchToProps = {
@@ -130,8 +146,9 @@ const mapDispatchToProps = {
     setEchoTurn,
     addReceivedAudios,
     removeReceivedAudio,
-    addRecordedAudios,
-    removeRecordedAudios,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(SpeakingSessionManager);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps,
+)(SpeakingSessionManager);

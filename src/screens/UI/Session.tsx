@@ -13,7 +13,10 @@ export const Session: React.FC<SessionScreenProps> = ({ route }) => {
     return (
         <Provider store={store}>
             <View style={styles.container}>
-                <SpeakingSessionManager session={session} webSocket={webSocket} />
+                <SpeakingSessionManager
+                    session={session}
+                    webSocket={webSocket}
+                />
             </View>
         </Provider>
     );

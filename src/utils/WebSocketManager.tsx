@@ -2,11 +2,21 @@
 import WebSocket from 'react-native-websocket';
 import { ServerEndpoint } from '../constants/constants.tsx';
 import React from 'react';
-import {DocumentDirectoryPath, downloadFile} from "react-native-fs";
-import {AudioManagerAPI} from "./AudioManager.tsx";
+import { DocumentDirectoryPath, downloadFile } from 'react-native-fs';
+import { AudioManagerAPI } from './AudioManager.tsx';
 
 let audioBuffer: string[] = [];
-const audioManager = new AudioManagerAPI();
+
+export const startConversation = (
+    webSocket: React.MutableRefObject<WebSocket>,
+) => {
+    if (webSocket.current) {
+        webSocket.current.onopen = () => {
+            webSocket.current?.send(JSON.stringify({ start: 1 }));
+        };
+    } else {
+    }
+};
 
 export const initialiseWebSocket = (
     webSocket: React.MutableRefObject<WebSocket | null>,
@@ -39,11 +49,13 @@ export const initialiseWebSocket = (
             audioBuffer.push(audio_final_url);
             const audioLocalPath = generateAudioFilePaths();
 
-            __downloadFile(audio_final_url, generateAudioFilePaths()).then(r => {
-                console.log('FILE DOWNLOADED SUCCESSFULLY');
-                // Call the callback function with the audio path
-                onMessageReceived(audioLocalPath);
-            })
+            __downloadFile(audio_final_url, generateAudioFilePaths()).then(
+                r => {
+                    console.log('FILE DOWNLOADED SUCCESSFULLY');
+                    // Call the callback function with the audio path
+                    onMessageReceived(audioLocalPath);
+                },
+            );
         }
     };
     console.log(webSocket.current);
@@ -60,7 +72,11 @@ const __downloadFile = async (uri: string, destination: string) => {
         background: true,
         begin: (res: any) => {
             console.log('begin', res);
-            console.log('contentLength:', res.contentLength / (1024 * 1024), 'MB');
+            console.log(
+                'contentLength:',
+                res.contentLength / (1024 * 1024),
+                'MB',
+            );
         },
         progress: (res: any) => {
             const percentage = (res.bytesWritten / res.contentLength) * 100;
@@ -118,8 +134,7 @@ export function isBufferEmpty() {
     return audioBuffer.length === 0;
 }
 
-
 const generateAudioFilePaths = () => {
     const baseName = `${Math.floor(new Date().getTime() / 1000)}_echo.mp3`;
     return `${DocumentDirectoryPath}/${baseName}`;
-}
+};
