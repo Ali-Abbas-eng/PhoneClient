@@ -68,6 +68,20 @@ const SpeakingSessionManager = ({
         }
     }, [echoTurn, receivedAudios]);
 
+    useEffect(() => {
+        // Handle the one-off case where echo starts the conversation with one message
+        if (!echoTurn) { // it's the user's turn
+
+            // TODO: prepare multi-stage request
+            /*
+            * record two audios
+            * send each one immediately when it's done recording
+            * when both audios are sent:
+            *   change echoTurn to true
+            */
+        }
+    }, [echoTurn, receivedAudios]);
+
 
     const startConversation = () => {
         if (webSocket.current) {
