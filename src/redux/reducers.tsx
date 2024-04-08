@@ -3,7 +3,7 @@ const initialState = {
     audioPath: '',
     waitingForEchoResponse: true,
     receivedAudios: [],
-    echoTurn: false,
+    echoTurn: true,
 };
 
 const rootReducer = (state = initialState, action: { type: any; payload: any; }) => {
