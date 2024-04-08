@@ -139,7 +139,7 @@ export class AudioManagerAPI {
         }
     }
 
-    playSound(soundFile: string) {
+    async playSound(soundFile: string) {
         let sound = new Sound(soundFile, Sound.MAIN_BUNDLE, (error: any) => {
             if (error) {
                 console.log('failed to load the sound', error);
