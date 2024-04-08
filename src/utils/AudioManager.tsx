@@ -12,6 +12,7 @@ export class AudioManagerAPI {
     private audioRecorderPlayer: AudioRecorderPlayer;
     private __isRecording: boolean;
     private __isPlaying: boolean;
+    private onStopRecordingCallback: (filePath: string) => void;
     private audioSet: {
         AudioEncoderAndroid: AudioEncoderAndroidType;
         AVNumberOfChannelsKeyIOS: number;
@@ -31,6 +32,7 @@ export class AudioManagerAPI {
         this.__isStoppable = false;
         this.__isPlaying = false;
         this.__isRecording = false;
+        this.onStopRecordingCallback = (_: string) => {};
         this.audioSet = {
             AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
             AudioSourceAndroid: AudioSourceAndroidType.MIC,
@@ -39,6 +41,10 @@ export class AudioManagerAPI {
             AVNumberOfChannelsKeyIOS: 2,
             AVFormatIDKeyIOS: AVEncodingOption.aac,
         };
+    }
+
+    registerOnStopRecordingCallback(functionality: (filePath: string) => void) {
+        this.onStopRecordingCallback = functionality;
     }
 
     generateAudioFilePaths() {
@@ -72,7 +78,7 @@ export class AudioManagerAPI {
             // Save a chunk of the recording after STAGING_AUDIO_LENGTH seconds
             setTimeout(async () => {
                 if (this.__isRecording) {
-                    await this.stopRecording(true);
+                    await this.stopRecording(true, stagingFilePath);
                     await this.audioRecorderPlayer.startRecorder(
                         filePath,
                         this.audioSet,
@@ -89,7 +95,7 @@ export class AudioManagerAPI {
             // Stop recording automatically after MAXIMUM_AUDIO_LENGTH seconds
             setTimeout(() => {
                 if (this.__isRecording) {
-                    this.stopRecording(false); // stop recording the original audio
+                    this.stopRecording(false, filePath); // stop recording the original audio
                 }
             }, MAXIMUM_AUDIO_LENGTH * 1000);
 
@@ -107,7 +113,7 @@ export class AudioManagerAPI {
         }
     }
 
-    async stopRecording(isChunk: boolean) {
+    async stopRecording(isChunk: boolean, filePath: string) {
         if (this.isRecording() && this.isStoppable()) {
             try {
                 await this.audioRecorderPlayer.stopRecorder();
@@ -119,6 +125,7 @@ export class AudioManagerAPI {
                 this.isRecordingSwitch();
                 this.isStoppableSwitch();
             }
+            this.onStopRecordingCallback(filePath);
         }
     }
 
