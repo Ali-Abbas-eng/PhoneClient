@@ -33,6 +33,7 @@ const SpeakingSessionManager = ({
     audioManager.registerOnStopRecordingCallback(async (filePath: string) => {
         await sendAudio(webSocket, filePath);
         console.log(`File at: ${filePath} is being sent to Echo server`);
+        audioManager.isPlayingSwitch();
         // TODO: FIX: recorded file is not reachable.
     });
     const socketURL = SocketIP + session.socket_url;
