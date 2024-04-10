@@ -3,10 +3,11 @@ import { WebSocketManager } from './WebSocketManager.tsx';
 import { DocumentDirectoryPath } from 'react-native-fs';
 import { downloadFile } from './FileManager.tsx';
 import { EchoResponse } from '../constants/types.tsx';
+import React from 'react';
 
 export class EchoSessionManager {
     private audioManager: AudioManagerAPI;
-    private webSocketManager: WebSocketManager;
+    public webSocketManager: WebSocketManager;
     private sessionInitialised: boolean;
     private echoAudioMessages: string[];
     private echoMessagesTranscripts: string[];
@@ -20,9 +21,9 @@ export class EchoSessionManager {
     private maximumMessageLength: number;
     private chunkMessageLength: number;
     public isAudioRecordSendable: boolean;
-
     constructor(
         socketURL: string,
+        webSocketRef: React.MutableRefObject<WebSocket | null>,
         messageCountLimit: number,
         minimumMessageLength: number,
         maximumMessageLength: number,
@@ -32,7 +33,7 @@ export class EchoSessionManager {
         this.audioManager.registerOnStopRecordingCallback(
             this.onMessageRecorded,
         );
-        this.webSocketManager = new WebSocketManager(socketURL);
+        this.webSocketManager = new WebSocketManager(webSocketRef, socketURL);
         this.webSocketManager.initialiseWebSocket(this.onMessageReceived);
         this.sessionInitialised = false;
         this.echoMessagesCount = 0;
@@ -63,6 +64,7 @@ export class EchoSessionManager {
             this.echoMessagesTranscripts.push(data.response_text);
             this.userMessagesTranscripts.push(data.answer_text); // User's previous response transcript.
             // We don't add anything to the user's audio list.
+            return true;
         } catch (error) {
             console.error(error);
             return false;
@@ -105,7 +107,8 @@ export class EchoSessionManager {
                     this.maximumMessageLength,
                     this.chunkMessageLength,
                 );
-                this.isAudioRecordSendable = this.audioManager.isStoppable() && !this.echoTurn;
+                this.isAudioRecordSendable =
+                    this.audioManager.isStoppable() && !this.echoTurn;
             }
         }
     }
