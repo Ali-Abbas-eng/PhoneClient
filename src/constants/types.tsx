@@ -50,3 +50,9 @@ export type LanguageCardProps = {
     sessions: Session[];
     onPress: () => void;
 };
+
+export type EchoResponse = {
+    audio: string;
+    answer_text: string;
+    response_text: string;
+};
