@@ -2,139 +2,112 @@
 import WebSocket from 'react-native-websocket';
 import { ServerEndpoint } from '../constants/constants.tsx';
 import React from 'react';
-import { DocumentDirectoryPath, downloadFile } from 'react-native-fs';
-import { AudioManagerAPI } from './AudioManager.tsx';
+import { DocumentDirectoryPath } from 'react-native-fs';
+import { EchoResponse } from '../constants/types.tsx';
 
-let audioBuffer: string[] = [];
+export class WebSocketManager {
+    audioBuffer: string[] = [];
+    webSocket: WebSocket;
 
-export const startConversation = (
-    webSocket: React.MutableRefObject<WebSocket>,
-) => {
-    if (webSocket.current) {
-        webSocket.current.onopen = () => {
-            webSocket.current?.send(JSON.stringify({ start: 1 }));
-        };
-    } else {
+    constructor(socketURL: string) {
+        this.webSocket = new WebSocket(socketURL);
     }
-};
 
-export const initialiseWebSocket = (
-    webSocket: React.MutableRefObject<WebSocket | null>,
-    onMessageReceived: (audioPath: string) => void,
-) => {
-    console.log('Initialising WebSocket...');
-    if (!webSocket.current) return { initialised: false };
-    let initialisedSuccessfully = true;
-
-    webSocket.current.onopen = () => {
-        console.log('Socket is open.');
-        initialisedSuccessfully = true;
-    };
-
-    webSocket.current.onclose = () => {
-        console.log('Socket is closed.');
-    };
-
-    webSocket.current.onerror = (event: any) => {
-        console.log(event.message);
-        initialisedSuccessfully = false;
-    };
-
-    webSocket.current.onmessage = (event: any) => {
-        let data = JSON.parse(event.data);
-        console.log('Data: ', data);
-        if (data.audio) {
-            let audio_final_url = ServerEndpoint + data.audio;
-            // Add the audio data to the buffer
-            audioBuffer.push(audio_final_url);
-            const audioLocalPath = generateAudioFilePaths();
-
-            __downloadFile(audio_final_url, generateAudioFilePaths()).then(
-                r => {
-                    console.log('FILE DOWNLOADED SUCCESSFULLY');
-                    // Call the callback function with the audio path
-                    onMessageReceived(audioLocalPath);
-                },
-            );
+    startConversation = () => {
+        if (this.webSocket) {
+            this.webSocket.onopen = () => {
+                this.webSocket?.send(JSON.stringify({ start: 1 }));
+            };
         }
     };
-    console.log(webSocket.current);
-    console.log('Socket Status: ', webSocket.current?.state);
-    return {
-        initialised: initialisedSuccessfully,
-    };
-};
 
-const __downloadFile = async (uri: string, destination: string) => {
-    const options = {
-        fromUrl: uri,
-        toFile: destination,
-        background: true,
-        begin: (res: any) => {
-            console.log('begin', res);
-            console.log(
-                'contentLength:',
-                res.contentLength / (1024 * 1024),
-                'MB',
-            );
-        },
-        progress: (res: any) => {
-            const percentage = (res.bytesWritten / res.contentLength) * 100;
-            console.log(`progress: ${percentage}%`);
-        },
-    };
+    initialiseWebSocket = (
+        onMessageReceived: (audioPath: EchoResponse) => void,
+    ) => {
+        console.log('Initialising WebSocket...');
+        if (!this.webSocket) return { initialised: false };
+        let initialisedSuccessfully = true;
 
-    try {
-        const result = await downloadFile(options).promise;
-        console.log('Download completed!', result);
-    } catch (error) {
-        console.log('Error downloading file:', error);
-    }
-};
-export async function sendAudio(
-    webSocket: React.MutableRefObject<WebSocket>,
-    audioFilePath: string,
-) {
-    if (!webSocket.current) return;
-
-    try {
-        // Fetch the file
-        const response = await fetch(audioFilePath);
-
-        // Get the file as a Blob
-        const blob = await response.blob();
-
-        // Create a new FileReader
-        const reader = new FileReader();
-
-        // Define what happens when the file has been read
-        reader.onloadend = () => {
-            // Get the result (an ArrayBuffer)
-            const arrayBuffer = reader.result;
-
-            // Send the ArrayBuffer over the WebSocket
-            webSocket.current.send(arrayBuffer);
+        this.webSocket.onopen = () => {
+            console.log('Socket is open.');
+            initialisedSuccessfully = true;
         };
 
-        // Read the Blob as an ArrayBuffer
-        reader.readAsArrayBuffer(blob);
-        // webSocket.current.send(audioData);
-    } catch (error) {
-        console.error('Error sending audio: ', error);
-    }
-}
+        this.webSocket.onclose = () => {
+            console.log('Socket is closed.');
+        };
 
-// Function to get the next audio in the buffer
-export function getNextAudio() {
-    return audioBuffer.shift();
-}
+        this.webSocket.onerror = (event: any) => {
+            console.log(event.message);
+            initialisedSuccessfully = false;
+        };
 
-// Function to check if the buffer is empty
-export function isBufferEmpty() {
-    return audioBuffer.length === 0;
-}
+        this.webSocket.onmessage = (event: any) => {
+            let data = JSON.parse(event.data);
+            console.log('Data: ', data);
+            if (data.audio) {
+                data.audio = ServerEndpoint + data.audio;
+                onMessageReceived(data);
+                // // Add the audio data to the buffer
+                // this.audioBuffer.push(audio_final_url);
+                // const audioLocalPath = this.generateAudioFilePaths();
+                //
+                // this.__downloadFile(
+                //     audio_final_url,
+                //     this.generateAudioFilePaths(),
+                // ).then(() => {
+                //     console.log('FILE DOWNLOADED SUCCESSFULLY');
+                //     // Call the callback function with the audio path
+                //     onMessageReceived(audioLocalPath);
+                // });
+            }
+        };
+        console.log(this.webSocket);
+        console.log('Socket Status: ', this.webSocket?.state);
+        return {
+            initialised: initialisedSuccessfully,
+        };
+    };
 
-const generateAudioFilePaths = () => {
-    const baseName = `${Math.floor(new Date().getTime() / 1000)}_echo.mp3`;
-    return `${DocumentDirectoryPath}/${baseName}`;
-};
+    sendAudio = async (audioFilePath: string) => {
+        if (!this.webSocket) return;
+
+        try {
+            // Fetch the file
+            const response = await fetch(audioFilePath);
+
+            // Get the file as a Blob
+            const blob = await response.blob();
+
+            // Create a new FileReader
+            const reader = new FileReader();
+
+            // Define what happens when the file has been read
+            reader.onloadend = () => {
+                // Get the result (an ArrayBuffer)
+                const arrayBuffer = reader.result;
+
+                // Send the ArrayBuffer over the WebSocket
+                this.webSocket.send(arrayBuffer);
+            };
+
+            // Read the Blob as an ArrayBuffer
+            reader.readAsArrayBuffer(blob);
+        } catch (error) {
+            console.error('Error sending audio: ', error);
+        }
+    };
+
+    getNextAudio = () => {
+        return this.audioBuffer.shift();
+    };
+
+    isBufferEmpty = () => {
+        return this.audioBuffer.length === 0;
+    };
+
+    generateAudioFilePaths = () => {
+        const baseName = `${Math.floor(new Date().getTime() / 1000)}_echo.mp3`;
+        return `${DocumentDirectoryPath}/${baseName}`;
+    };
+}
