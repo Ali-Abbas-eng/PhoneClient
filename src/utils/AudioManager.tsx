@@ -12,7 +12,10 @@ export class AudioManagerAPI {
     private audioRecorderPlayer: AudioRecorderPlayer;
     private __isRecording: boolean;
     private __isPlaying: boolean;
-    private onStopRecordingCallback: (filePath: string) => void;
+    private onStopRecordingCallback: (
+        filePath: string,
+        completeResponse: boolean,
+    ) => void;
     private audioSet: {
         AudioEncoderAndroid: AudioEncoderAndroidType;
         AVNumberOfChannelsKeyIOS: number;
@@ -43,7 +46,9 @@ export class AudioManagerAPI {
         };
     }
 
-    registerOnStopRecordingCallback(functionality: (filePath: string) => void) {
+    registerOnStopRecordingCallback(
+        functionality: (filePath: string, completeResopnse: boolean) => void,
+    ) {
         this.onStopRecordingCallback = functionality;
     }
 
@@ -67,42 +72,48 @@ export class AudioManagerAPI {
         const filePaths = this.generateAudioFilePaths();
         const filePath = filePaths.full;
         const stagingFilePath = filePaths.chunk;
+        let completeAudioFileUri: string;
+        let chunkAudioFileUri: string;
         this.isRecordingSwitch();
         try {
-            const uri = await this.audioRecorderPlayer.startRecorder(
-                stagingFilePath,
-                this.audioSet,
-                this.meteringEnabled,
-            );
+            this.audioRecorderPlayer
+                .startRecorder(
+                    stagingFilePath,
+                    this.audioSet,
+                    this.meteringEnabled,
+                )
+                .then((result: string) => {
+                    chunkAudioFileUri = result;
+                });
 
             // Save a chunk of the recording after STAGING_AUDIO_LENGTH seconds
             setTimeout(async () => {
                 if (this.__isRecording) {
-                    await this.stopRecording(true, stagingFilePath);
-                    await this.audioRecorderPlayer.startRecorder(
-                        filePath,
-                        this.audioSet,
-                        this.meteringEnabled,
-                    );
+                    this.stopRecording(true, chunkAudioFileUri).then(() => {
+                        this.audioRecorderPlayer
+                            .startRecorder(
+                                filePath,
+                                this.audioSet,
+                                this.meteringEnabled,
+                            )
+                            .then((result: string) => {
+                                completeAudioFileUri = result;
+                            });
+                    });
                 }
             }, STAGING_AUDIO_LENGTH * 1000);
 
             // Allow user to stop recording after MINIMUM_AUDIO_LENGTH seconds
             setTimeout(() => {
-                this.isStoppableSwitch();
+                this.__isStoppable = true;
             }, MINIMUM_AUDIO_LENGTH * 1000);
 
             // Stop recording automatically after MAXIMUM_AUDIO_LENGTH seconds
             setTimeout(() => {
                 if (this.__isRecording) {
-                    this.stopRecording(false, filePath); // stop recording the original audio
+                    this.stopRecording(false, completeAudioFileUri); // stop recording the original audio
                 }
             }, MAXIMUM_AUDIO_LENGTH * 1000);
-
-            return {
-                audioPath: uri,
-                stagingFilePath: stagingFilePath,
-            };
         } catch (error) {
             console.log('Uh-oh! Failed to start recording:', error);
             return {
@@ -122,10 +133,10 @@ export class AudioManagerAPI {
                 console.log('Oops! Failed to stop recording:', error);
             }
             if (!isChunk) {
-                this.isRecordingSwitch();
-                this.isStoppableSwitch();
+                this.__isStoppable = false;
+                this.__isRecording = false;
             }
-            this.onStopRecordingCallback(filePath);
+            this.onStopRecordingCallback(filePath, !isChunk);
         }
     }
 
@@ -161,10 +172,6 @@ export class AudioManagerAPI {
 
     isRecordingSwitch() {
         this.__isRecording = !this.__isRecording;
-    }
-
-    isPlaying() {
-        return this.__isPlaying;
     }
     isPlayingSwitch() {
         this.__isPlaying = !this.__isPlaying;
