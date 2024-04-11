@@ -22,14 +22,14 @@ export class EchoSessionManager {
     public isAudioRecordSendable: boolean;
 
     constructor(
-        socketURL: string,
+        socket: WebSocket | null,
         messageCountLimit: number,
         minimumMessageLength: number,
         maximumMessageLength: number,
         chunkMessageLength: number,
     ) {
         this.audioManager = new AudioManagerAPI();
-        this.webSocketManager = new WebSocketManager(socketURL);
+        this.webSocketManager = new WebSocketManager(socket);
         this.sessionInitialised = false;
         this.echoMessagesCount = 0;
         this.userMessagesCount = 0;

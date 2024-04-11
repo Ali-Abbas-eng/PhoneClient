@@ -4,11 +4,10 @@ import { ServerEndpoint } from '../constants/constants.tsx';
 import { EchoResponse } from '../constants/types.tsx';
 
 export class WebSocketManager {
-    audioBuffer: string[] = [];
     webSocket: WebSocket;
 
-    constructor(socketURL: string) {
-        this.webSocket = new WebSocket(socketURL);
+    constructor(socket: WebSocket) {
+        this.webSocket = socket;
 
         // Bind the context
         this.startConversation = this.startConversation.bind(this);
@@ -20,6 +19,7 @@ export class WebSocketManager {
         if (this.webSocket) {
             console.log(this.webSocket);
             this.webSocket.onopen = () => {
+                console.log('Hello World');
                 this.webSocket?.send(JSON.stringify({ start: 1 }));
             };
         } else {
@@ -53,6 +53,7 @@ export class WebSocketManager {
             console.log('Data: ', data);
             if (data.audio) {
                 data.audio = ServerEndpoint + data.audio;
+                console.log('Data', JSON.stringify(data));
                 onMessageReceived(data);
             }
         };
