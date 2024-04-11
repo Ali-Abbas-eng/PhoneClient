@@ -11,6 +11,8 @@ import { Setups } from './src/screens/UI/Setups.tsx';
 import { RootStackParamList } from './src/constants/types.tsx';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Provider } from 'react-redux';
+import store from './src/redux/store.tsx';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<RootStackParamList>();
@@ -54,19 +56,30 @@ const MainTabs = () => {
 };
 function App(): React.JSX.Element {
     return (
-        <NavigationContainer>
-            <Stack.Navigator>
-                <Stack.Screen
-                    name={ScreenNames.Main}
-                    component={MainTabs}
-                    options={{ headerShown: false }}
-                />
-                <Stack.Screen name={ScreenNames.Login} component={Login} />
-                <Stack.Screen name={ScreenNames.Setups} component={Setups} />
-                <Stack.Screen name={ScreenNames.Signup} component={Signup} />
-                <Stack.Screen name={ScreenNames.Session} component={Session} />
-            </Stack.Navigator>
-        </NavigationContainer>
+        <Provider store={store}>
+            <NavigationContainer>
+                <Stack.Navigator>
+                    <Stack.Screen
+                        name={ScreenNames.Main}
+                        component={MainTabs}
+                        options={{ headerShown: false }}
+                    />
+                    <Stack.Screen name={ScreenNames.Login} component={Login} />
+                    <Stack.Screen
+                        name={ScreenNames.Setups}
+                        component={Setups}
+                    />
+                    <Stack.Screen
+                        name={ScreenNames.Signup}
+                        component={Signup}
+                    />
+                    <Stack.Screen
+                        name={ScreenNames.Session}
+                        component={Session}
+                    />
+                </Stack.Navigator>
+            </NavigationContainer>
+        </Provider>
     );
 }
 

@@ -7,17 +7,24 @@ import { EchoResponse } from '../constants/types.tsx';
 
 export class WebSocketManager {
     audioBuffer: string[] = [];
-    webSocket: WebSocket;
+    webSocketRef: React.MutableRefObject<WebSocket | null>;
 
-    constructor(socketURL: string) {
-        this.webSocket = new WebSocket(socketURL);
+    constructor(
+        webSocketRef: React.MutableRefObject<WebSocket | null>,
+        socketURL: string,
+    ) {
+        this.webSocketRef = webSocketRef;
+        this.webSocketRef.current = new WebSocket(socketURL);
     }
 
     startConversation = () => {
-        if (this.webSocket) {
-            this.webSocket.onopen = () => {
-                this.webSocket?.send(JSON.stringify({ start: 1 }));
+        if (this.webSocketRef.current) {
+            console.log(this.webSocketRef.current);
+            this.webSocketRef.current.onopen = () => {
+                this.webSocketRef.current?.send(JSON.stringify({ start: 1 }));
             };
+        } else {
+            console.error('WebSocket not available');
         }
     };
 
@@ -25,24 +32,24 @@ export class WebSocketManager {
         onMessageReceived: (audioPath: EchoResponse) => void,
     ) => {
         console.log('Initialising WebSocket...');
-        if (!this.webSocket) return { initialised: false };
+        if (!this.webSocketRef.current) return { initialised: false };
         let initialisedSuccessfully = true;
 
-        this.webSocket.onopen = () => {
+        this.webSocketRef.current.onopen = () => {
             console.log('Socket is open.');
             initialisedSuccessfully = true;
         };
 
-        this.webSocket.onclose = () => {
+        this.webSocketRef.current.onclose = () => {
             console.log('Socket is closed.');
         };
 
-        this.webSocket.onerror = (event: any) => {
+        this.webSocketRef.current.onerror = (event: any) => {
             console.log(event.message);
             initialisedSuccessfully = false;
         };
 
-        this.webSocket.onmessage = (event: any) => {
+        this.webSocketRef.current.onmessage = (event: any) => {
             let data = JSON.parse(event.data);
             console.log('Data: ', data);
             if (data.audio) {
@@ -62,15 +69,15 @@ export class WebSocketManager {
                 // });
             }
         };
-        console.log(this.webSocket);
-        console.log('Socket Status: ', this.webSocket?.state);
+        console.log(this.webSocketRef.current);
+        console.log('Socket Status: ', this.webSocketRef.current?.state);
         return {
             initialised: initialisedSuccessfully,
         };
     };
 
     sendAudio = async (audioFilePath: string) => {
-        if (!this.webSocket) return;
+        if (!this.webSocketRef.current) return;
 
         try {
             // Fetch the file
@@ -88,7 +95,7 @@ export class WebSocketManager {
                 const arrayBuffer = reader.result;
 
                 // Send the ArrayBuffer over the WebSocket
-                this.webSocket.send(arrayBuffer);
+                this.webSocketRef.current.send(arrayBuffer);
             };
 
             // Read the Blob as an ArrayBuffer

@@ -1,14 +1,7 @@
-import { createStore } from 'redux';
 import rootReducer from './reducers';
 import { configureStore } from '@reduxjs/toolkit';
 
-const initialState = {
-    isRecording: false,
-    audioPath: '',
-    waitingForEchoResponse: true,
-    receivedAudios: [],
-    echoTurn: true,
-};
+const initialState = {};
 
 const store = configureStore({
     // @ts-ignore
