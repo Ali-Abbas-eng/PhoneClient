@@ -2,6 +2,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { ScreenNames } from './constants.tsx';
 import React from 'react';
+import { EchoSessionManager } from '../utils/EchoSessionManager.tsx';
 
 export interface Session {
     id: number;
@@ -56,3 +57,8 @@ export type EchoResponse = {
     answer_text: string;
     response_text: string;
 };
+
+export interface RootState {
+    webSocket: WebSocket | null;
+    echoSessionManager: EchoSessionManager | null;
+}
