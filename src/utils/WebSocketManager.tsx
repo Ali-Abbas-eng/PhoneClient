@@ -19,7 +19,7 @@ export class WebSocketManager {
         if (this.webSocket) {
             console.log(this.webSocket);
             this.webSocket.onopen = () => {
-                console.log('Hello World');
+                console.log('Socket is Open');
                 this.webSocket?.send(JSON.stringify({ start: 1 }));
             };
         } else {
