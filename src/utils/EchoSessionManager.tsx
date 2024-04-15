@@ -22,14 +22,18 @@ export class EchoSessionManager {
     public isAudioRecordSendable: boolean;
 
     constructor(
-        socket: WebSocket | null,
+        audioManager: AudioManagerAPI,
+        webSocketManager: WebSocketManager,
         messageCountLimit: number,
         minimumMessageLength: number,
         maximumMessageLength: number,
         chunkMessageLength: number,
     ) {
-        this.audioManager = new AudioManagerAPI();
-        this.webSocketManager = new WebSocketManager(socket);
+        // random initialisers
+        // this.audioManager = new AudioManagerAPI();
+        // this.webSocketManager = new WebSocketManager(new WebSocket(''));
+        this.setAudioManager(audioManager);
+        this.setWebSocketManager(webSocketManager);
         this.sessionInitialised = false;
         this.echoMessagesCount = 0;
         this.userMessagesCount = 0;
@@ -47,16 +51,24 @@ export class EchoSessionManager {
         // Bind the context
         this.onMessageReceived = this.onMessageReceived.bind(this);
         this.onMessageRecorded = this.onMessageRecorded.bind(this);
+    }
 
-        // Register callbacks
-        this.audioManager.registerOnStopRecordingCallback(
-            this.onMessageRecorded,
-        );
+    setWebSocketManager(webSocketManagerObject: WebSocketManager) {
+        this.webSocketManager = webSocketManagerObject;
         this.webSocketManager.initialiseWebSocket(this.onMessageReceived);
     }
 
+    setAudioManager(audioManagerAPIObject: AudioManagerAPI) {
+        this.audioManager = audioManagerAPIObject;
+        this.audioManager.registerOnStopRecordingCallback(
+            this.onMessageRecorded,
+        );
+    }
+
     __generateAudioFileName(author: string) {
-        const baseName = `${Math.floor(new Date().getTime() / 1000)}_${author}.mp3`;
+        const baseName = `${Math.floor(
+            new Date().getTime() / 1000,
+        )}_${author}.mp3`;
         return `${DocumentDirectoryPath}/${baseName}`;
     }
 
@@ -75,42 +87,61 @@ export class EchoSessionManager {
     }
 
     async onMessageRecorded(filePath: string, completeResponse: boolean) {
-        await this.webSocketManager.sendAudio(filePath);
-        this.userAudioMessages.push(filePath);
-        this.echoTurn = completeResponse; // if both parts of the audio were sent (it's now echo's turn)
-        ++this.userMessagesCount;
+        if (this.webSocketManager) {
+            await this.webSocketManager.sendAudio(filePath);
+            this.userAudioMessages.push(filePath);
+            this.echoTurn = completeResponse; // if both parts of the audio were sent (it's now echo's turn)
+            ++this.userMessagesCount;
+        } else {
+            console.log(
+                'Error [EchoSessionManager.onMessageRecorded]: this.webSocketManager is: ',
+                this.webSocketManager,
+            );
+        }
     }
 
     async converse() {
-        this.webSocketManager.startConversation();
-        while (this.userMessagesCount < this.chatMessagesLimit) {
-            // Define behaviour on echo's turn
-            if (this.echoTurn) {
-                let completeResponse = false;
-                let message = this.echoAudioMessages[this.echoMessagesCount];
-                if (message) {
-                    await this.audioManager.playSound(message);
-                    if (completeResponse || !this.sessionInitialised) {
-                        // if complete response flag is met, then echo said what it said, switch turns.
-                        this.echoTurn = false;
-                    } else {
-                        // if complete response flag is false, then the audio played is the first chunk
-                        completeResponse = true;
+        console.log('inside converse');
+        if (this.audioManager && this.webSocketManager) {
+            console.log('inside the true side of converse');
+            this.webSocketManager.startConversation();
+            while (this.userMessagesCount < this.chatMessagesLimit) {
+                // Define behaviour on echo's turn
+                if (this.echoTurn) {
+                    let completeResponse = false;
+                    let message =
+                        this.echoAudioMessages[this.echoMessagesCount];
+                    if (message) {
+                        await this.audioManager.playSound(message);
+                        if (completeResponse || !this.sessionInitialised) {
+                            // if complete response flag is met, then echo said what it said, switch turns.
+                            this.echoTurn = false;
+                        } else {
+                            // if complete response flag is false, then the audio played is the first chunk
+                            completeResponse = true;
+                        }
+                        if (!this.sessionInitialised) {
+                            this.sessionInitialised = true;
+                        }
+                        ++this.echoMessagesCount;
                     }
-                    if (!this.sessionInitialised) {
-                        this.sessionInitialised = true;
-                    }
-                    ++this.echoMessagesCount;
+                } else {
+                    await this.audioManager.startRecording(
+                        this.minimumMessageLength,
+                        this.maximumMessageLength,
+                        this.chunkMessageLength,
+                    );
+                    this.isAudioRecordSendable =
+                        this.audioManager.isStoppable() && !this.echoTurn;
                 }
-            } else {
-                await this.audioManager.startRecording(
-                    this.minimumMessageLength,
-                    this.maximumMessageLength,
-                    this.chunkMessageLength,
-                );
-                this.isAudioRecordSendable =
-                    this.audioManager.isStoppable() && !this.echoTurn;
             }
+        } else {
+            console.log(
+                'Error [EchoSessionManager.converse]: this.webSocketManager is: ',
+                this.webSocketManager,
+                'Error [EchoSessionManager.converse]: this.audioManager is: ',
+                this.audioManager,
+            );
         }
     }
 }

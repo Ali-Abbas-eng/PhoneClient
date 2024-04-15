@@ -92,4 +92,8 @@ export class WebSocketManager {
             console.error('Error sending audio: ', error);
         }
     };
+
+    getWebSocket() {
+        return this.webSocket;
+    }
 }
