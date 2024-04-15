@@ -140,7 +140,7 @@ export class AudioManagerAPI {
         }
     }
 
-    async playSound(soundFile: string) {
+    playSound(soundFile: string, callback: { (): void; (): void } | undefined) {
         this.isPlayingSwitch();
         let sound = new Sound(soundFile, Sound.MAIN_BUNDLE, (error: any) => {
             if (error) {
@@ -148,6 +148,9 @@ export class AudioManagerAPI {
             } else {
                 sound.play((success: boolean) => {
                     if (success) {
+                        if (callback) {
+                            callback();
+                        }
                         console.log('successfully finished playing');
                     } else {
                         console.log(
