@@ -118,6 +118,7 @@ export class AudioManagerAPI {
             try {
                 const fileURI = await this.audioRecorderPlayer.stopRecorder();
                 this.onStopRecordingCallback(fileURI, !isChunk);
+                this.audioRecorderPlayer.removeRecordBackListener();
             } catch (error) {
                 console.log('Oops! Failed to stop recording:', error);
             }
