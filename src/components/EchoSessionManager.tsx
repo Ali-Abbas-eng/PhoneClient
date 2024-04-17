@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, View } from 'react-native';
+import { Button } from 'react-native';
 import { WebSocketManager } from '../utils/WebSocketManager.tsx';
 import { AudioManagerAPI } from '../utils/AudioManager.tsx';
 import { EchoResponse } from '../constants/types.tsx';
@@ -114,10 +114,7 @@ export const EchoSessionManager: React.FC<StartChatButtonProps> = ({
             title="Stop Recording"
             disabled={audioManager.isStoppable() && !echoTurn}
             onPress={async () => {
-                await audioManager.stopRecording(
-                    false,
-                    userAudioMessages[userMessagesCount.current - 1],
-                );
+                await audioManager.stopRecording(false);
             }}
         />
     );

@@ -58,7 +58,7 @@ export class AudioManagerAPI {
         }`;
         const audioFiles = {
             full: `${DocumentDirectoryPath}/${baseName}.aac`,
-            chunk: `${DocumentDirectoryPath}/${baseName}_chunk.aac`,
+            chunk: `${DocumentDirectoryPath}/${baseName}_chunk.mp3`,
         };
         return audioFiles;
     }
@@ -72,34 +72,23 @@ export class AudioManagerAPI {
         const filePaths = this.generateAudioFilePaths();
         const filePath = filePaths.full;
         const stagingFilePath = filePaths.chunk;
-        let completeAudioFileUri: string;
-        let chunkAudioFileUri: string;
         this.isRecordingSwitch();
         try {
-            this.audioRecorderPlayer
-                .startRecorder(
-                    stagingFilePath,
-                    this.audioSet,
-                    this.meteringEnabled,
-                )
-                .then((result: string) => {
-                    chunkAudioFileUri = result;
-                });
+            await this.audioRecorderPlayer.startRecorder(
+                stagingFilePath,
+                this.audioSet,
+                this.meteringEnabled,
+            );
 
             // Save a chunk of the recording after STAGING_AUDIO_LENGTH seconds
             setTimeout(async () => {
                 if (this.__isRecording) {
-                    this.stopRecording(true, chunkAudioFileUri).then(() => {
-                        this.audioRecorderPlayer
-                            .startRecorder(
-                                filePath,
-                                this.audioSet,
-                                this.meteringEnabled,
-                            )
-                            .then((result: string) => {
-                                completeAudioFileUri = result;
-                            });
-                    });
+                    await this.stopRecording(true);
+                    await this.audioRecorderPlayer.startRecorder(
+                        filePath,
+                        this.audioSet,
+                        this.meteringEnabled,
+                    );
                 }
             }, STAGING_AUDIO_LENGTH * 1000);
 
@@ -111,7 +100,7 @@ export class AudioManagerAPI {
             // Stop recording automatically after MAXIMUM_AUDIO_LENGTH seconds
             setTimeout(() => {
                 if (this.__isRecording) {
-                    this.stopRecording(false, completeAudioFileUri); // stop recording the original audio
+                    this.stopRecording(false); // stop recording the original audio
                 }
             }, MAXIMUM_AUDIO_LENGTH * 1000);
         } catch (error) {
@@ -124,11 +113,11 @@ export class AudioManagerAPI {
         }
     }
 
-    async stopRecording(isChunk: boolean, filePath: string) {
+    async stopRecording(isChunk: boolean) {
         if (this.isRecording() && this.isStoppable()) {
             try {
-                await this.audioRecorderPlayer.stopRecorder();
-                console.log('Stopped Recording!');
+                const fileURI = await this.audioRecorderPlayer.stopRecorder();
+                this.onStopRecordingCallback(fileURI, !isChunk);
             } catch (error) {
                 console.log('Oops! Failed to stop recording:', error);
             }
@@ -136,7 +125,6 @@ export class AudioManagerAPI {
                 this.__isStoppable = false;
                 this.__isRecording = false;
             }
-            this.onStopRecordingCallback(filePath, !isChunk);
         }
     }
 
@@ -164,9 +152,6 @@ export class AudioManagerAPI {
 
     isStoppable() {
         return this.__isStoppable;
-    }
-    isStoppableSwitch() {
-        this.__isStoppable = !this.__isStoppable;
     }
 
     isRecording() {
