@@ -114,7 +114,7 @@ export class AudioManagerAPI {
     }
 
     async stopRecording(isChunk: boolean) {
-        if (this.isRecording() && this.isStoppable()) {
+        if (this.isRecording() && (this.isStoppable() || isChunk)) {
             try {
                 const fileURI = await this.audioRecorderPlayer.stopRecorder();
                 this.onStopRecordingCallback(fileURI, !isChunk);
