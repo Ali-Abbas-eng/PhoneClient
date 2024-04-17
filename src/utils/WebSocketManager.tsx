@@ -65,6 +65,7 @@ export class WebSocketManager {
     };
 
     sendAudio = async (audioFilePath: string) => {
+        console.log('Trying to Send Audio At: ', audioFilePath);
         if (!this.webSocket) return;
 
         try {
