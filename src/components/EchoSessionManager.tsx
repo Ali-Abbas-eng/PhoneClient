@@ -5,9 +5,9 @@ import { AudioManagerAPI } from '../utils/AudioManager.tsx';
 import { EchoResponse } from '../constants/types.tsx';
 import { downloadFile } from '../utils/FileManager.tsx';
 import { DocumentDirectoryPath } from 'react-native-fs';
-interface StartChatButtonProps {
-    webSocketManager: WebSocketManager;
-    audioManager: AudioManagerAPI;
+interface EchoSessionManagerProps {
+    webSocketManager: React.MutableRefObject<WebSocketManager>;
+    audioManager: React.MutableRefObject<AudioManagerAPI>;
 }
 
 const __generateAudioFileName = (author: string) => {
@@ -22,7 +22,7 @@ let userAudioMessages: string[] = [];
 const minimumMessagesDuration = 5;
 const maximumMessagesDuration = 10;
 const chunkMessagesDuration = 3;
-export const EchoSessionManager: React.FC<StartChatButtonProps> = ({
+export const EchoSessionManager: React.FC<EchoSessionManagerProps> = ({
     webSocketManager,
     audioManager,
 }) => {
@@ -31,47 +31,41 @@ export const EchoSessionManager: React.FC<StartChatButtonProps> = ({
     const sessionInitialised = useRef<boolean>(false);
     const completeResponse = useRef<boolean>(false);
     const [echoTurn, setEchoTurn] = useState<boolean>(true);
-    const [messageReady, setMessageReady] = useState<boolean>(false);
-    const onMessageReceived = async (data: EchoResponse) => {
-        try {
-            let filePath = __generateAudioFileName('echo');
-            await downloadFile(data.audio, filePath);
-            echoAudioMessages.push(filePath);
-            echoMessagesTranscripts.push(data.response_text);
-            userMessagesTranscripts.push(data.answer_text); // User's previous response transcript.
-            console.log('EchoAudioMessages: ', echoAudioMessages);
-            console.log('EchoMessagesTranscripts: ', echoMessagesTranscripts);
-            console.log('UserMessagesTranscripts: ', userMessagesTranscripts);
-            setMessageReady(true);
-            return true;
-        } catch (error) {
-            console.error(error);
-            return false;
-        }
-    };
+    const [messageReady, setMessageReady] = useState(false);
 
-    webSocketManager.initialiseWebSocket(onMessageReceived);
+    useEffect(() => {
+        const onMessageRecorded = async (
+            filePath: string,
+            completeResponse: boolean,
+        ) => {
+            if (webSocketManager.current) {
+                await webSocketManager.current.sendAudio(filePath);
+                userAudioMessages.push(filePath);
+                setEchoTurn(completeResponse);
+                ++userMessagesCount.current;
+            } else {
+            }
+        };
+        const onMessageReceived = async (data: EchoResponse) => {
+            try {
+                let filePath = __generateAudioFileName('echo');
+                await downloadFile(data.audio, filePath);
+                echoAudioMessages.push(filePath);
+                echoMessagesTranscripts.push(data.response_text);
+                userMessagesTranscripts.push(data.answer_text); // User's previous response transcript.
+                setMessageReady(true);
+                return true;
+            } catch (error) {
+                console.error('Error Receiving Audio: ', error);
+                return false;
+            }
+        };
+        webSocketManager.current.initialiseWebSocket(onMessageReceived);
+        audioManager.current.registerOnStopRecordingCallback(onMessageRecorded);
+    }, [audioManager, webSocketManager]);
 
-    const onMessageRecorded = async (
-        filePath: string,
-        completeResponse: boolean,
-    ) => {
-        if (webSocketManager) {
-            console.log('Message Recorded at: ', filePath);
-            await webSocketManager.sendAudio(filePath);
-            userAudioMessages.push(filePath);
-            setEchoTurn(completeResponse);
-            ++userMessagesCount.current;
-        } else {
-            console.log(
-                'Error [SessionConductor.onMessageRecorded]: webSocketManager is: ',
-                webSocketManager,
-            );
-        }
-    };
-    audioManager.registerOnStopRecordingCallback(onMessageRecorded);
     const startRecording = useCallback(() => {
-        audioManager.startRecording(
+        audioManager.current.startRecording(
             minimumMessagesDuration,
             maximumMessagesDuration,
             chunkMessagesDuration,
@@ -90,19 +84,19 @@ export const EchoSessionManager: React.FC<StartChatButtonProps> = ({
         };
         let message = echoAudioMessages[echoMessagesCount.current];
         if (message) {
-            audioManager.playSound(message, onAudioPlayed);
+            audioManager.current.playSound(message, onAudioPlayed);
         }
     }, [audioManager]);
 
     useEffect(() => {
-        console.log('WebSocketManager Object: ', webSocketManager);
         if (!sessionInitialised.current) {
-            webSocketManager.startConversation();
+            webSocketManager.current.startConversation();
         }
     }, [webSocketManager]);
 
     useEffect(() => {
         if (echoTurn) {
+            console.log('it is echo turn, message must be played');
             playEchoMessage();
         } else {
             startRecording();
@@ -112,9 +106,9 @@ export const EchoSessionManager: React.FC<StartChatButtonProps> = ({
     return (
         <Button
             title="Stop Recording"
-            disabled={audioManager.isStoppable() && !echoTurn}
+            disabled={audioManager.current.isStoppable() && !echoTurn}
             onPress={async () => {
-                await audioManager.stopRecording(false);
+                await audioManager.current.stopRecording(false);
             }}
         />
     );

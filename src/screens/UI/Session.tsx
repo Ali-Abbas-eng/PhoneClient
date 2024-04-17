@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { SessionScreenProps } from '../../constants/types.tsx';
 import { SocketIP } from '../../constants/constants.tsx';
@@ -12,18 +12,13 @@ import { styles } from '../../styles/styels.tsx';
 
 export const Session: React.FC<SessionScreenProps> = ({ route }) => {
     const { session } = route.params;
-
-    const [webSocketManager, setWebSocketManager] =
-        useState<WebSocketManager | null>(null);
-    const [audioManager, setAudioManager] = useState<AudioManagerAPI | null>(
-        null,
+    const webSocket = useRef<WebSocket>(
+        new WebSocket(SocketIP + session.socket_url),
     );
-
-    useEffect(() => {
-        setAudioManager(new AudioManagerAPI());
-        const webSocket = new WebSocket(SocketIP + session.socket_url);
-        setWebSocketManager(new WebSocketManager(webSocket));
-    }, [session.socket_url]);
+    const webSocketManager = useRef<WebSocketManager>(
+        new WebSocketManager(webSocket),
+    );
+    const audioManager = useRef<AudioManagerAPI>(new AudioManagerAPI());
 
     useEffect(() => {
         const permissionGrants = requestPermissions([
@@ -37,9 +32,10 @@ export const Session: React.FC<SessionScreenProps> = ({ route }) => {
     }, []);
 
     useEffect(() => {
+        let current = webSocketManager.current;
         return () => {
             if (webSocketManager) {
-                webSocketManager.webSocket.close();
+                current.webSocket.current.close();
             }
         };
     }, [webSocketManager]);
