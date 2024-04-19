@@ -31,7 +31,7 @@ export const EchoSessionManager: React.FC<EchoSessionManagerProps> = ({
             title="Stop Recording"
             disabled={!sessionManager.current.echoTurn}
             onPress={async () => {
-                sessionManager.current.stopRecording();
+                sessionManager.current.stopRecording(false);
             }}
         />
     );
