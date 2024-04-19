@@ -5,6 +5,9 @@ import { AudioManagerAPI } from '../utils/AudioManager.tsx';
 import { EchoResponse } from '../constants/types.tsx';
 import { downloadFile } from '../utils/FileManager.tsx';
 import { DocumentDirectoryPath } from 'react-native-fs';
+import { Events, Turns } from '../constants/constants.tsx';
+import { DeviceEventEmitter } from 'react-native';
+
 interface EchoSessionManagerProps {
     webSocketManager: React.MutableRefObject<WebSocketManager>;
     audioManager: React.MutableRefObject<AudioManagerAPI>;
@@ -27,12 +30,38 @@ export const EchoSessionManager: React.FC<EchoSessionManagerProps> = ({
     audioManager,
 }) => {
     const userMessagesCount = useRef<number>(0);
-    const echoMessagesCount = useRef<number>(0);
+    const echoMessagesCount = useRef<number>(1);
     const sessionInitialised = useRef<boolean>(false);
     const completeResponse = useRef<boolean>(false);
+    const turn = useRef<number>(Turns.HOLD);
     const [echoTurn, setEchoTurn] = useState<boolean>(true);
     const [messageReady, setMessageReady] = useState(false);
-
+    const recalculateTurns = useCallback(() => {
+        const previousTurn = turn.current;
+        // if the current turn now is Echo's, we switch if the number of messages is divisible by 2
+        // and is grater than the number of messages recorded by the user
+        if (
+            echoMessagesCount.current % 2 === 1 &&
+            echoMessagesCount.current > userMessagesCount.current
+        ) {
+            // echo is two played messages ahead of user, it's time for the user to start recording
+            turn.current = Turns.USER;
+        } else if (echoMessagesCount.current === userMessagesCount.current) {
+            // if there is a buffered message ready to be played
+            if (messageReady) {
+                // the user has now replied to all echo messages, it's now Echo's turn to push the conversation
+                turn.current = Turns.ECHO;
+            } else {
+                turn.current = Turns.HOLD;
+            }
+        }
+        const newTurn = turn.current;
+        if (previousTurn !== newTurn) {
+            DeviceEventEmitter.emit(Events.TURNS_CHANGE);
+        }
+        console.log('Previous Turn: ', previousTurn);
+        console.log('Current Turn: ', newTurn);
+    }, [messageReady]);
     useEffect(() => {
         const onMessageRecorded = async (
             filePath: string,
@@ -43,6 +72,7 @@ export const EchoSessionManager: React.FC<EchoSessionManagerProps> = ({
                 userAudioMessages.push(filePath);
                 setEchoTurn(completeResponse);
                 ++userMessagesCount.current;
+                recalculateTurns();
             } else {
             }
         };
@@ -54,6 +84,7 @@ export const EchoSessionManager: React.FC<EchoSessionManagerProps> = ({
                 echoMessagesTranscripts.push(data.response_text);
                 userMessagesTranscripts.push(data.answer_text); // User's previous response transcript.
                 setMessageReady(true);
+                recalculateTurns();
                 return true;
             } catch (error) {
                 console.error('Error Receiving Audio: ', error);
@@ -62,7 +93,7 @@ export const EchoSessionManager: React.FC<EchoSessionManagerProps> = ({
         };
         webSocketManager.current.initialiseWebSocket(onMessageReceived);
         audioManager.current.registerOnStopRecordingCallback(onMessageRecorded);
-    }, [audioManager, webSocketManager]);
+    }, [audioManager, recalculateTurns, webSocketManager]);
 
     const startRecording = useCallback(() => {
         audioManager.current.startRecording(
@@ -81,12 +112,13 @@ export const EchoSessionManager: React.FC<EchoSessionManagerProps> = ({
                 sessionInitialised.current = true;
             }
             ++echoMessagesCount.current;
+            recalculateTurns();
         };
-        let message = echoAudioMessages[echoMessagesCount.current];
+        let message = echoAudioMessages[echoMessagesCount.current - 1];
         if (message) {
             audioManager.current.playSound(message, onAudioPlayed);
         }
-    }, [audioManager]);
+    }, [audioManager, recalculateTurns]);
 
     useEffect(() => {
         if (!sessionInitialised.current) {
@@ -94,15 +126,35 @@ export const EchoSessionManager: React.FC<EchoSessionManagerProps> = ({
         }
     }, [webSocketManager]);
 
-    useEffect(() => {
-        if (echoTurn) {
-            console.log('it is echo turn, message must be played');
-            playEchoMessage();
-        } else {
-            startRecording();
-        }
-    }, [echoTurn, messageReady, playEchoMessage, startRecording]);
+    // Define your function that contains the logic
+    const handleTurnChange = useCallback(() => {
+        switch (turn.current) {
+            case Turns.ECHO:
+                console.log(
+                    "It's Echo's Turn, and the current messages in the queue are: ",
+                    echoAudioMessages,
+                );
+                playEchoMessage();
+                break;
 
+            case Turns.USER:
+                console.log(
+                    "It's the User's turn, you should see recording process indicators",
+                );
+                startRecording();
+                break;
+
+            case Turns.HOLD:
+                console.log("The app is currently waiting on Echo's message");
+                // do nothing
+                break;
+        }
+    }, [playEchoMessage, startRecording]);
+    // Add the event listener for 'turnChange'
+    DeviceEventEmitter.addListener(Events.TURNS_CHANGE, handleTurnChange);
+    // useEffect(() => {
+    //     handleTurnChange();
+    // }, [handleTurnChange]);
     return (
         <Button
             title="Stop Recording"
