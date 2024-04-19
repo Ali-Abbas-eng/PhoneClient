@@ -68,7 +68,6 @@ export class AudioManagerAPI {
         MAXIMUM_AUDIO_LENGTH: number,
         STAGING_AUDIO_LENGTH: number,
     ) {
-        console.log('Started Recording...');
         const filePaths = this.generateAudioFilePaths();
         const filePath = filePaths.full;
         const stagingFilePath = filePaths.chunk;
@@ -104,7 +103,6 @@ export class AudioManagerAPI {
                 }
             }, MAXIMUM_AUDIO_LENGTH * 1000);
         } catch (error) {
-            console.log('Uh-oh! Failed to start recording:', error);
             return {
                 audioPath: '',
                 stagingFilePath: '',
@@ -122,9 +120,7 @@ export class AudioManagerAPI {
                         this.onStopRecordingCallback(fileURI, !isChunk);
                         this.audioRecorderPlayer.removeRecordBackListener();
                     });
-            } catch (error) {
-                console.log('Oops! Failed to stop recording:', error);
-            }
+            } catch (error) {}
             if (!isChunk) {
                 this.__isStoppable = false;
                 this.__isRecording = false;
@@ -136,18 +132,13 @@ export class AudioManagerAPI {
         this.isPlayingSwitch();
         let sound = new Sound(soundFile, Sound.MAIN_BUNDLE, (error: any) => {
             if (error) {
-                console.log('failed to load the sound', error);
             } else {
                 sound.play((success: boolean) => {
                     if (success) {
                         if (callback) {
                             callback();
                         }
-                        console.log('successfully finished playing');
                     } else {
-                        console.log(
-                            'playback failed due to audio decoding errors',
-                        );
                     }
                 });
             }

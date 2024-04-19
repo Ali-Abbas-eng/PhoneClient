@@ -61,23 +61,48 @@ export class SessionManager {
     };
 
     recalculateTurns = () => {
+        /*
+         * if no message is received and session is not initialised, then it's Echo's Turn to send the first message
+         * if a message is received and session is not initialised, then it's time to play the first message
+         * if session is initialised, and number of messages by Echo equals number of messages by user + 2, it's the user's turn
+         * if session is initialised and number of messages by Echo is less then number of messages by user + 2, it's Echo's turn
+         */
         const previousTurn = this.turn;
         if (
-            this.echoMessagesCount % 2 === 1 &&
-            this.echoMessagesCount > this.userMessagesCount
+            !this.sessionInitialised &&
+            this.echoMessagesCount === 1 &&
+            !this.messageReady
+        ) {
+            // it's the very beginning of the session
+            this.turn = Turns.HOLD;
+        } else if (!this.sessionInitialised && this.messageReady) {
+            this.turn = Turns.ECHO;
+        } else if (
+            this.sessionInitialised &&
+            this.echoMessagesCount < this.userMessagesCount + 2
+        ) {
+            // Echo must be ahead by exactly two message to complete a response
+            this.turn = Turns.ECHO;
+        } else if (
+            this.sessionInitialised &&
+            this.echoMessagesCount === this.userMessagesCount + 2
         ) {
             this.turn = Turns.USER;
-        } else if (this.echoMessagesCount === this.userMessagesCount) {
-            if (this.messageReady) {
-                this.turn = Turns.ECHO;
-            } else {
-                this.turn = Turns.HOLD;
-            }
         }
         const newTurn = this.turn;
         if (previousTurn !== newTurn) {
             DeviceEventEmitter.emit(Events.TURNS_CHANGE);
         }
+        console.log(
+            `State Details:
+            \t\tthis.echoMessagesCount  = ${this.echoMessagesCount}
+            \t\tthis.userMessagesCount  = ${this.userMessagesCount}
+            \t\tthis.sessionInitialised = ${this.sessionInitialised}
+            \t\tthis.echoAudioMessages  = ${this.echoAudioMessages}
+            \t\tPrevious Turn           = ${previousTurn}
+            \t\tCurrent Turn            = ${newTurn}`,
+        );
+        return previousTurn !== newTurn;
     };
 
     onMessageRecorded = async (filePath: string, completeResponse: boolean) => {
@@ -102,11 +127,6 @@ export class SessionManager {
             this.echoMessagesTranscripts.push(data.response_text);
             this.userMessagesTranscripts.push(data.answer_text);
             this.messageReady = true;
-            if (!this.sessionInitialised) {
-                this.sessionInitialised = true;
-                this.turn = Turns.ECHO;
-                DeviceEventEmitter.emit(Events.TURNS_CHANGE);
-            }
             this.recalculateTurns();
             return true;
         } catch (error) {
@@ -132,6 +152,12 @@ export class SessionManager {
                 this.sessionInitialised = true;
             }
             ++this.echoMessagesCount;
+            if (this.echoMessagesCount === 2) {
+                this.sessionInitialised = true;
+            }
+            console.log(
+                `Echo Message Played, current echoMessagesCount: ${this.echoMessagesCount}`,
+            );
             this.recalculateTurns();
         };
         let message = this.echoAudioMessages[this.echoMessagesCount - 1];

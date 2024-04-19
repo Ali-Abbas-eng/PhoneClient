@@ -11,8 +11,6 @@ const __fetchSessions = async () => {
     try {
         const response = await api.get(GetSessionsListEndpoint);
         if (response) {
-            console.log('Response: ', response);
-            console.log('Response.status: ', response.status);
             sessions = response.data;
         }
     } catch (error) {
