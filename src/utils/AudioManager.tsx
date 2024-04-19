@@ -113,12 +113,15 @@ export class AudioManagerAPI {
         }
     }
 
-    async stopRecording(isChunk: boolean) {
+    stopRecording(isChunk: boolean) {
         if (this.isRecording() && (this.isStoppable() || isChunk)) {
             try {
-                const fileURI = await this.audioRecorderPlayer.stopRecorder();
-                this.onStopRecordingCallback(fileURI, !isChunk);
-                this.audioRecorderPlayer.removeRecordBackListener();
+                this.audioRecorderPlayer
+                    .stopRecorder()
+                    .then((fileURI: string) => {
+                        this.onStopRecordingCallback(fileURI, !isChunk);
+                        this.audioRecorderPlayer.removeRecordBackListener();
+                    });
             } catch (error) {
                 console.log('Oops! Failed to stop recording:', error);
             }
