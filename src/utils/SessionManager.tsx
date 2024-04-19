@@ -162,6 +162,8 @@ export class SessionManager {
     };
 
     cleanup = () => {
+        this.audioManager.current.cleanup();
+        this.webSocketManager.current.cleanup();
         DeviceEventEmitter.removeAllListeners(Events.TURNS_CHANGE);
     };
 }

@@ -165,4 +165,9 @@ export class AudioManagerAPI {
     isPlayingSwitch() {
         this.__isPlaying = !this.__isPlaying;
     }
+
+    cleanup() {
+        this.audioRecorderPlayer.removeRecordBackListener();
+        this.audioRecorderPlayer.removePlayBackListener();
+    }
 }

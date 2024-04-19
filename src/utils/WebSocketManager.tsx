@@ -2,7 +2,7 @@
 import WebSocket from 'react-native-websocket';
 import { ServerEndpoint } from '../constants/constants.tsx';
 import { EchoResponse } from '../constants/types.tsx';
-import React from "react";
+import React from 'react';
 
 export class WebSocketManager {
     webSocket: React.MutableRefObject<WebSocket>;
@@ -96,5 +96,9 @@ export class WebSocketManager {
 
     getWebSocket() {
         return this.webSocket.current;
+    }
+
+    cleanup() {
+        this.webSocket.current.close();
     }
 }
