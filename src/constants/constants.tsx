@@ -26,3 +26,9 @@ export enum Turns {
 export enum Events {
     TURNS_CHANGE = 'turns change',
 }
+
+export enum Durations {
+    MIN_RECORD = 6,
+    MAX_RECORD = 10,
+    CHUNK_RECORD = 3,
+}

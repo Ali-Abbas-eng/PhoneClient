@@ -1,9 +1,9 @@
 import { DeviceEventEmitter } from 'react-native';
-import { WebSocketManager } from '../utils/WebSocketManager.tsx';
-import { AudioManagerAPI } from '../utils/AudioManager.tsx';
-import { downloadFile } from '../utils/FileManager.tsx';
+import { WebSocketManager } from './WebSocketManager.tsx';
+import { AudioManagerAPI } from './AudioManager.tsx';
+import { downloadFile } from './FileManager.tsx';
 import { DocumentDirectoryPath } from 'react-native-fs';
-import { Events, Turns } from '../constants/constants.tsx';
+import { Durations, Events, Turns } from '../constants/constants.tsx';
 import React, { MutableRefObject } from 'react';
 
 export class SessionManager {
@@ -20,9 +20,9 @@ export class SessionManager {
     private echoMessagesTranscripts: string[] = [];
     private userMessagesTranscripts: string[] = [];
     private userAudioMessages: string[] = [];
-    private minimumMessagesDuration = 5;
-    private maximumMessagesDuration = 10;
-    private chunkMessagesDuration = 3;
+    private minimumMessagesDuration: Durations = Durations.MIN_RECORD;
+    private maximumMessagesDuration: Durations = Durations.MAX_RECORD;
+    private chunkMessagesDuration: Durations = Durations.CHUNK_RECORD;
 
     constructor(
         webSocketManager: MutableRefObject<WebSocketManager>,
@@ -50,6 +50,7 @@ export class SessionManager {
         this.audioManager.current.registerOnStopRecordingCallback(
             this.onMessageRecorded,
         );
+        DeviceEventEmitter.emit(Events.TURNS_CHANGE);
     }
 
     __generateAudioFileName = (author: string) => {
@@ -101,6 +102,11 @@ export class SessionManager {
             this.echoMessagesTranscripts.push(data.response_text);
             this.userMessagesTranscripts.push(data.answer_text);
             this.messageReady = true;
+            if (!this.sessionInitialised) {
+                this.sessionInitialised = true;
+                this.turn = Turns.ECHO;
+                DeviceEventEmitter.emit(Events.TURNS_CHANGE);
+            }
             this.recalculateTurns();
             return true;
         } catch (error) {
@@ -134,8 +140,8 @@ export class SessionManager {
         }
     };
 
-    stopRecording() {
-        this.audioManager.current.stopRecording;
+    stopRecording(isChunk: boolean) {
+        this.audioManager.current.stopRecording(isChunk);
     }
 
     handleTurnChange = () => {
