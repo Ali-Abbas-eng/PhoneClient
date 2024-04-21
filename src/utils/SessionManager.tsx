@@ -78,7 +78,8 @@ export class SessionManager {
             this.turn = Turns.ECHO;
         } else if (
             this.sessionInitialised &&
-            echoAudioMessagesCount < this.userMessagesCount + 2
+            echoAudioMessagesCount < this.userMessagesCount + 2 &&
+            this.userMessagesCount % 2 === 0
         ) {
             // Echo must be ahead by exactly two message to complete a response
             this.turn = Turns.ECHO;
@@ -167,10 +168,10 @@ export class SessionManager {
         };
         const messageIndex = this.getEchoMessagesCount() - 2;
         let message = this.echoAudioMessages[messageIndex];
-        console.log(`Message to be Played: ${message}`);
         console.log(`Playing Echo Message State Details
-         \t\techoAudioMessages =${this.echoAudioMessages}
-         \t\tmessageIndex      =${messageIndex}`);
+         \t\techoAudioMessages = ${this.echoAudioMessages}
+         \t\tmessageIndex      = ${messageIndex}
+         \t\tmessage           = ${message}`);
         if (message) {
             this.audioManager.current.playSound(message, onAudioPlayed);
         }
