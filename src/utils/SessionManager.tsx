@@ -25,6 +25,7 @@ export class SessionManager {
     private chunkMessagesDuration: Durations = Durations.CHUNK_RECORD;
     private uiStateManagers: UIStateManagerType[];
     private uiStateVariables: Record<string, any>;
+    private uiStateVariablesPrevious: Record<string, any>;
     constructor(
         webSocketManager: MutableRefObject<WebSocketManager>,
         audioManager: MutableRefObject<AudioManagerAPI>,
@@ -39,6 +40,7 @@ export class SessionManager {
         this.messageReady = false;
         this.uiStateManagers = [];
         this.uiStateVariables = { isRecordingStoppable: false };
+        this.uiStateVariablesPrevious = this.uiStateVariables;
         // Add the event listener for 'turnChange'
         DeviceEventEmitter.addListener(
             Events.TURNS_CHANGE,
@@ -239,7 +241,14 @@ export class SessionManager {
             \t\t${managerObject.target}: ${
                 this.uiStateVariables[managerObject.target]
             }`);
-            managerObject.handler(this.uiStateVariables[managerObject.target]);
+            if (
+                this.uiStateVariables[managerObject.target] !==
+                this.uiStateVariablesPrevious[managerObject.target]
+            ) {
+                managerObject.handler(
+                    this.uiStateVariables[managerObject.target],
+                );
+            }
         });
     }
 }
