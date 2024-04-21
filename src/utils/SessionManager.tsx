@@ -5,6 +5,7 @@ import { downloadFile } from './FileManager.tsx';
 import { DocumentDirectoryPath } from 'react-native-fs';
 import { Durations, Events, Turns } from '../constants/constants.tsx';
 import React, { MutableRefObject } from 'react';
+import { UIStateManagerType } from '../constants/types.tsx';
 
 export class SessionManager {
     private webSocketManager: React.MutableRefObject<WebSocketManager>;
@@ -22,7 +23,8 @@ export class SessionManager {
     private minimumMessagesDuration: Durations = Durations.MIN_RECORD;
     private maximumMessagesDuration: Durations = Durations.MAX_RECORD;
     private chunkMessagesDuration: Durations = Durations.CHUNK_RECORD;
-
+    private uiStateManagers: UIStateManagerType[];
+    private uiStateVariables: Record<string, any>;
     constructor(
         webSocketManager: MutableRefObject<WebSocketManager>,
         audioManager: MutableRefObject<AudioManagerAPI>,
@@ -35,7 +37,8 @@ export class SessionManager {
         this.turn = Turns.HOLD;
         this.echoTurn = true;
         this.messageReady = false;
-
+        this.uiStateManagers = [];
+        this.uiStateVariables = { isRecordingStoppable: false };
         // Add the event listener for 'turnChange'
         DeviceEventEmitter.addListener(
             Events.TURNS_CHANGE,
@@ -202,6 +205,8 @@ export class SessionManager {
                 console.log("The app is currently waiting on Echo's message");
                 break;
         }
+        this.updateStateVariables();
+        this.fireUIUpdaters();
     };
 
     cleanup = () => {
@@ -212,5 +217,29 @@ export class SessionManager {
 
     getEchoMessagesCount() {
         return this.echoAudioMessages.length + 1;
+    }
+
+    getIsRecordingStoppable() {
+        return (
+            this.audioManager.current.isStoppable() && this.turn === Turns.USER
+        );
+    }
+
+    registerUiStateManager(managerObject: UIStateManagerType) {
+        this.uiStateManagers.push(managerObject);
+    }
+
+    updateStateVariables() {
+        this.uiStateVariables.isRecordingStoppable =
+            this.getIsRecordingStoppable();
+    }
+    fireUIUpdaters() {
+        this.uiStateManagers.map((managerObject: UIStateManagerType) => {
+            console.log(`State Variables: 
+            \t\t${managerObject.target}: ${
+                this.uiStateVariables[managerObject.target]
+            }`);
+            managerObject.handler(this.uiStateVariables[managerObject.target]);
+        });
     }
 }

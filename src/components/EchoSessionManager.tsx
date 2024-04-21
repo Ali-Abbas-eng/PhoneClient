@@ -1,6 +1,5 @@
-// EchoSessionManager.tsx
-import React, { useEffect, useRef } from 'react';
-import { Button } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Button, View } from 'react-native';
 import { WebSocketManager } from '../utils/WebSocketManager.tsx';
 import { AudioManagerAPI } from '../utils/AudioManager.tsx';
 import { SessionManager } from '../utils/SessionManager.tsx';
@@ -17,6 +16,12 @@ export const EchoSessionManager: React.FC<EchoSessionManagerProps> = ({
     const sessionManager = useRef(
         new SessionManager(webSocketManager, audioManager),
     );
+    const [isRecordingStoppable, setIsRecordingStoppable] = useState(false);
+    const stopRecordingStateManager = {
+        target: 'isRecordingStoppable',
+        handler: setIsRecordingStoppable,
+    };
+    sessionManager.current.registerUiStateManager(stopRecordingStateManager);
 
     useEffect(() => {
         const currentSessionManager = sessionManager.current;
@@ -25,14 +30,16 @@ export const EchoSessionManager: React.FC<EchoSessionManagerProps> = ({
             currentSessionManager.cleanup();
         };
     }, []);
-
+    console.log(sessionManager.current.getIsRecordingStoppable());
     return (
-        <Button
-            title="Stop Recording"
-            disabled={!sessionManager.current.echoTurn}
-            onPress={async () => {
-                sessionManager.current.stopRecording(false);
-            }}
-        />
+        <View>
+            <Button
+                title="Stop Recording"
+                disabled={!isRecordingStoppable}
+                onPress={async () => {
+                    sessionManager.current.stopRecording(false);
+                }}
+            />
+        </View>
     );
 };

@@ -55,3 +55,8 @@ export type EchoResponse = {
     answer_text: string;
     response_text: string;
 };
+
+export type UIStateManagerType = {
+    target: string;
+    handler: (value: any) => void;
+};
