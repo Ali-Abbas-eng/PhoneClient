@@ -12,10 +12,7 @@ export class AudioManagerAPI {
     private audioRecorderPlayer: AudioRecorderPlayer;
     private __isRecording: boolean;
     private __isPlaying: boolean;
-    private onStopRecordingCallback: (
-        filePath: string,
-        completeResponse: boolean,
-    ) => void;
+    private onStopRecordingCallback: (filePath: string) => void;
     private audioSet: {
         AudioEncoderAndroid: AudioEncoderAndroidType;
         AVNumberOfChannelsKeyIOS: number;
@@ -46,9 +43,7 @@ export class AudioManagerAPI {
         };
     }
 
-    registerOnStopRecordingCallback(
-        functionality: (filePath: string, completeResopnse: boolean) => void,
-    ) {
+    registerOnStopRecordingCallback(functionality: (filePath: string) => void) {
         this.onStopRecordingCallback = functionality;
     }
 
@@ -117,7 +112,7 @@ export class AudioManagerAPI {
                 this.audioRecorderPlayer
                     .stopRecorder()
                     .then((fileURI: string) => {
-                        this.onStopRecordingCallback(fileURI, !isChunk);
+                        this.onStopRecordingCallback(fileURI);
                         this.audioRecorderPlayer.removeRecordBackListener();
                     });
             } catch (error) {}

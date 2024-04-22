@@ -12,9 +12,7 @@ export class SessionManager {
     private audioManager: React.MutableRefObject<AudioManagerAPI>;
     private userMessagesCount: number;
     private sessionInitialised: boolean;
-    private completeResponse: boolean;
     private turn: Turns;
-    echoTurn: boolean;
     private messageReady: boolean;
     private echoAudioMessages: string[] = [];
     private echoMessagesTranscripts: string[] = [];
@@ -34,7 +32,6 @@ export class SessionManager {
         this.audioManager = audioManager;
         this.userMessagesCount = 0;
         this.sessionInitialised = false;
-        this.completeResponse = false;
         this.turn = Turns.HOLD;
         this.messageReady = false;
         this.uiStateManagers = [];
@@ -116,7 +113,7 @@ export class SessionManager {
         return previousTurn !== newTurn;
     };
 
-    onMessageRecorded = async (filePath: string, completeResponse: boolean) => {
+    onMessageRecorded = async (filePath: string) => {
         if (this.webSocketManager.current) {
             await this.webSocketManager.current.sendAudio(filePath);
             this.userAudioMessages.push(filePath);
@@ -155,17 +152,6 @@ export class SessionManager {
 
     playEchoMessage = () => {
         const onAudioPlayed = () => {
-            if (this.completeResponse || !this.sessionInitialised) {
-            } else {
-                this.completeResponse = true;
-                this.sessionInitialised = true;
-            }
-            if (this.getEchoMessagesCount() === 2) {
-                this.sessionInitialised = true;
-            }
-            console.log(
-                `Echo Message Played, current echoMessagesCount: ${this.getEchoMessagesCount()}`,
-            );
             this.recalculateTurns();
         };
         const messageIndex = this.getEchoMessagesCount() - 2;
