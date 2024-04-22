@@ -36,7 +36,6 @@ export class SessionManager {
         this.sessionInitialised = false;
         this.completeResponse = false;
         this.turn = Turns.HOLD;
-        this.echoTurn = true;
         this.messageReady = false;
         this.uiStateManagers = [];
         this.uiStateVariables = { isRecordingStoppable: false };
@@ -121,7 +120,6 @@ export class SessionManager {
         if (this.webSocketManager.current) {
             await this.webSocketManager.current.sendAudio(filePath);
             this.userAudioMessages.push(filePath);
-            this.echoTurn = completeResponse;
             ++this.userMessagesCount;
             this.recalculateTurns();
         }
@@ -158,7 +156,6 @@ export class SessionManager {
     playEchoMessage = () => {
         const onAudioPlayed = () => {
             if (this.completeResponse || !this.sessionInitialised) {
-                this.echoTurn = false;
             } else {
                 this.completeResponse = true;
                 this.sessionInitialised = true;
