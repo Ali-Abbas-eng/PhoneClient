@@ -30,7 +30,6 @@ export const EchoSessionManager: React.FC<EchoSessionManagerProps> = ({
             currentSessionManager.cleanup();
         };
     }, []);
-    console.log(sessionManager.current.getIsRecordingStoppable());
     return (
         <View>
             <Button
