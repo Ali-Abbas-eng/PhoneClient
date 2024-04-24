@@ -58,7 +58,7 @@ export class AudioManagerAPI {
         return audioFiles;
     }
 
-    async startRecording(
+    startRecording(
         MINIMUM_AUDIO_LENGTH: number,
         MAXIMUM_AUDIO_LENGTH: number,
         STAGING_AUDIO_LENGTH: number,
@@ -68,7 +68,7 @@ export class AudioManagerAPI {
         const stagingFilePath = filePaths.chunk;
         this.isRecordingSwitch();
         try {
-            await this.audioRecorderPlayer.startRecorder(
+            this.audioRecorderPlayer.startRecorder(
                 stagingFilePath,
                 this.audioSet,
                 this.meteringEnabled,
@@ -77,7 +77,7 @@ export class AudioManagerAPI {
             // Save a chunk of the recording after STAGING_AUDIO_LENGTH seconds
             setTimeout(async () => {
                 if (this.__isRecording) {
-                    await this.stopRecording(true);
+                    this.stopRecording(true);
                     await this.audioRecorderPlayer.startRecorder(
                         filePath,
                         this.audioSet,
