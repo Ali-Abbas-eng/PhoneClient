@@ -13,17 +13,21 @@ export class SessionManager {
     private userMessagesCount: number;
     private sessionInitialised: boolean;
     private turn: Turns;
-    private messageReady: boolean;
-    private echoAudioMessages: string[] = [];
+    private echoAudioMessages: string[] = ['dummyMessage'];
     private echoMessagesTranscripts: string[] = [];
     private userMessagesTranscripts: string[] = [];
     private userAudioMessages: string[] = [];
+    private playedMessages: number[];
+    private nextMessageToPlay: number;
     private minimumMessagesDuration: Durations = Durations.MIN_RECORD;
     private maximumMessagesDuration: Durations = Durations.MAX_RECORD;
     private chunkMessagesDuration: Durations = Durations.CHUNK_RECORD;
     private uiStateManagers: UIStateManagerType[];
     private uiStateVariables: Record<string, any>;
     private uiStateVariablesPrevious: Record<string, any>;
+    private isPlaying: boolean;
+    private isRecording: boolean;
+    private turnsConsistency: Record<Turns, number>;
     constructor(
         webSocketManager: MutableRefObject<WebSocketManager>,
         audioManager: MutableRefObject<AudioManagerAPI>,
@@ -33,8 +37,17 @@ export class SessionManager {
         this.userMessagesCount = 0;
         this.sessionInitialised = false;
         this.turn = Turns.HOLD;
-        this.messageReady = false;
         this.uiStateManagers = [];
+        this.isPlaying = false;
+        this.isRecording = false;
+        this.nextMessageToPlay = 1;
+        this.playedMessages = [1];
+        this.turnsConsistency = {
+            [Turns.ECHO]: 1,
+            [Turns.USER]: 0,
+            [Turns.HOLD]: 0,
+        };
+
         this.uiStateVariables = { isRecordingStoppable: false };
         this.uiStateVariablesPrevious = this.uiStateVariables;
         // Add the event listener for 'turnChange'
@@ -59,6 +72,26 @@ export class SessionManager {
         return `${DocumentDirectoryPath}/${baseName}`;
     };
 
+    isItEchosTurn() {
+        const echoMessagesTarget =
+            this.userMessagesCount - (this.userMessagesCount % 2) + 2;
+        console.log(`\t\tEchoMessagesTarget: ${echoMessagesTarget}`);
+        console.log(`\t\tEchoMessagesCount: ${this.getEchoMessagesCount()}`);
+        console.log(`\t\tNextMessageToPlay: ${this.nextMessageToPlay}`);
+        if (
+            this.getEchoMessagesCount() === echoMessagesTarget &&
+            this.nextMessageToPlay === echoMessagesTarget // account for counting from 0
+        ) {
+            console.log('Hello, from Condition: 1111111111');
+            return false;
+        }
+        if (this.getEchoMessagesCount() !== this.nextMessageToPlay + 1) {
+            console.log('Hello, from Condition: 2222222222');
+            return true;
+        }
+        return this.getEchoMessagesCount() !== this.userMessagesCount;
+    }
+
     recalculateTurns = () => {
         /*
          * if no message is received and session is not initialised, then it's Echo's Turn to send the first message
@@ -68,37 +101,29 @@ export class SessionManager {
          */
         const previousTurn = this.turn;
         const echoAudioMessagesCount = this.getEchoMessagesCount();
-        if (
-            !this.sessionInitialised &&
-            echoAudioMessagesCount === 1 &&
-            !this.messageReady
-        ) {
-            // it's the very beginning of the session
-            this.turn = Turns.HOLD;
-        } else if (!this.sessionInitialised && this.messageReady) {
-            this.turn = Turns.ECHO;
-        } else if (
-            this.sessionInitialised &&
-            echoAudioMessagesCount < this.userMessagesCount + 2 &&
-            this.userMessagesCount % 2 === 0
-        ) {
-            // Echo must be ahead by exactly two message to complete a response
-            this.turn = Turns.ECHO;
-        } else if (
-            this.sessionInitialised &&
-            echoAudioMessagesCount === this.userMessagesCount + 2
-        ) {
-            this.turn = Turns.USER;
+        if (this.isPlaying && this.isRecording) {
+            console.log(
+                `Fatal State: this.isRecording: ${this.isRecording}, this.isPlaying: ${this.isPlaying}`,
+            );
+            return null;
         }
+        if (this.isPlaying || this.isRecording) {
+            return;
+        }
+        this.turn = this.isItEchosTurn() ? Turns.ECHO : Turns.USER;
         if (
             this.turn === Turns.ECHO &&
-            this.echoAudioMessages.length < this.userMessagesCount
+            this.nextMessageToPlay === this.userMessagesCount &&
+            this.getEchoMessagesCount() === this.userMessagesCount
         ) {
             // it's Echo's turn, but audios are still pending
             this.turn = Turns.HOLD;
         }
         const newTurn = this.turn;
         if (previousTurn !== newTurn) {
+            DeviceEventEmitter.emit(Events.TURNS_CHANGE);
+        } else if (newTurn === Turns.ECHO) {
+            // we're expecting echo to play the next message
             DeviceEventEmitter.emit(Events.TURNS_CHANGE);
         }
         console.log(
@@ -107,6 +132,7 @@ export class SessionManager {
             \t\tthis.userMessagesCount       = ${this.userMessagesCount}
             \t\tthis.sessionInitialised      = ${this.sessionInitialised}
             \t\tthis.echoAudioMessages       = ${this.echoAudioMessages}
+            \t\tthis.nextMessageToPlay       = ${this.nextMessageToPlay}
             \t\tPrevious Turn                = ${previousTurn}
             \t\tCurrent Turn                 = ${newTurn}`,
         );
@@ -118,31 +144,33 @@ export class SessionManager {
             await this.webSocketManager.current.sendAudio(filePath);
             this.userAudioMessages.push(filePath);
             ++this.userMessagesCount;
+            this.isRecording = false;
+            ++this.turnsConsistency[Turns.USER];
             this.recalculateTurns();
         }
     };
 
-    onMessageReceived = async (data: {
+    onMessageReceived = (data: {
         audio: string;
         response_text: string;
         answer_text: string;
     }) => {
         try {
             let filePath = this.__generateAudioFileName('echo');
-            await downloadFile(data.audio, filePath);
-            this.echoAudioMessages.push(filePath);
-            this.echoMessagesTranscripts.push(data.response_text);
-            this.userMessagesTranscripts.push(data.answer_text);
-            this.messageReady = true;
-            this.recalculateTurns();
-            return true;
+            downloadFile(data.audio, filePath).then(() => {
+                this.echoAudioMessages.push(filePath);
+                this.echoMessagesTranscripts.push(data.response_text);
+                this.userMessagesTranscripts.push(data.answer_text);
+                this.playedMessages.push(0);
+                this.recalculateTurns();
+            });
         } catch (error) {
             console.error('Error Receiving Audio: ', error);
-            return false;
         }
     };
 
     startRecording = () => {
+        this.isRecording = true;
         this.audioManager.current.startRecording(
             this.minimumMessagesDuration,
             this.maximumMessagesDuration,
@@ -150,18 +178,18 @@ export class SessionManager {
         );
     };
 
+    onAudioPlayed = () => {
+        this.isPlaying = false;
+        this.playedMessages[this.nextMessageToPlay] = 1;
+        ++this.turnsConsistency[Turns.ECHO];
+        ++this.nextMessageToPlay;
+        this.recalculateTurns();
+    };
     playEchoMessage = () => {
-        const onAudioPlayed = () => {
-            this.recalculateTurns();
-        };
-        const messageIndex = this.getEchoMessagesCount() - 2;
-        let message = this.echoAudioMessages[messageIndex];
-        console.log(`Playing Echo Message State Details
-         \t\techoAudioMessages = ${this.echoAudioMessages}
-         \t\tmessageIndex      = ${messageIndex}
-         \t\tmessage           = ${message}`);
+        this.isPlaying = true;
+        let message = this.echoAudioMessages[this.nextMessageToPlay];
         if (message) {
-            this.audioManager.current.playSound(message, onAudioPlayed);
+            this.audioManager.current.playSound(message, this.onAudioPlayed);
         }
     };
 
@@ -172,10 +200,6 @@ export class SessionManager {
     handleTurnChange = () => {
         switch (this.turn) {
             case Turns.ECHO:
-                console.log(
-                    "It's Echo's Turn, and the current messages in the queue are: ",
-                    this.echoAudioMessages,
-                );
                 this.playEchoMessage();
                 break;
 
@@ -201,7 +225,7 @@ export class SessionManager {
     };
 
     getEchoMessagesCount() {
-        return this.echoAudioMessages.length + 1;
+        return this.echoAudioMessages.length;
     }
 
     getIsRecordingStoppable() {
