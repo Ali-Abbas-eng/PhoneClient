@@ -143,4 +143,58 @@ export const styles = StyleSheet.create({
         fontSize: 18,
         color: '#777',
     },
+    sessionContainer: {
+        flex: 1,
+        backgroundColor: '#fff', // White background for the entire screen
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 30,
+    },
+    sessionMessageBox: {
+        flex: 1,
+        width: '90%',
+        backgroundColor: '#f9f9f9', // Light grey background for the message box
+        borderRadius: 25,
+        padding: 20,
+        marginVertical: 20,
+        shadowColor: '#000', // Shadow for the message box
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    sessionMessage: {
+        backgroundColor: '#e1f5fe', // Light blue background for each message
+        borderRadius: 15,
+        padding: 15,
+        marginVertical: 10,
+    },
+    sessionMessageText: {
+        color: '#0277bd', // Dark blue color for the message text
+        fontSize: 16,
+    },
+    sessionMicrophoneButton: {
+        backgroundColor: '#29b6f6', // Blue background for the microphone button
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 30,
+        shadowColor: '#000', // Shadow for the microphone button
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    sessionMicrophoneIcon: {
+        width: 64,
+        height: 64,
+    },
 });
