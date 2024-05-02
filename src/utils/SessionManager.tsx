@@ -1,6 +1,6 @@
 import { DeviceEventEmitter } from 'react-native';
 import { WebSocketManager } from './WebSocketManager.tsx';
-import { AudioManagerAPI } from './AudioManager.tsx';
+import {AudioManagerAPI, ComplexAudioObject} from './AudioManager.tsx';
 import { downloadFile } from './FileManager.tsx';
 import { DocumentDirectoryPath } from 'react-native-fs';
 import { Durations, Events, Turns } from '../constants/constants.tsx';
@@ -18,6 +18,7 @@ export class SessionManager {
     private userMessagesTranscripts: string[] = [];
     private userAudioMessages: string[] = [];
     private playedMessages: number[];
+    private userRecordedMessageComplexObject: ComplexAudioObject[];
     private nextMessageToPlay: number;
     private minimumMessagesDuration: Durations = Durations.MIN_RECORD;
     private maximumMessagesDuration: Durations = Durations.MAX_RECORD;
@@ -40,6 +41,7 @@ export class SessionManager {
         this.uiStateManagers = [];
         this.isPlaying = false;
         this.isRecording = false;
+        this.userRecordedMessageComplexObject = [];
         this.nextMessageToPlay = 1;
         this.playedMessages = [1];
         this.turnsConsistency = {
@@ -194,7 +196,10 @@ export class SessionManager {
     };
 
     stopRecording(isChunk: boolean) {
-        this.audioManager.current.stopRecording(isChunk);
+        const result = this.audioManager.current.stopRecording(isChunk);
+        if (result) {
+            this.userRecordedMessageComplexObject.push(result); // stop recording was done with one message
+        }
     }
 
     handleTurnChange = () => {
