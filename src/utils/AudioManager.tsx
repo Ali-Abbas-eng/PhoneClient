@@ -123,7 +123,9 @@ export class AudioManagerAPI {
             if (!isChunk) {
                 this.__isStoppable = false;
                 this.__isRecording = false;
-                return new ComplexAudioObject(this.__audioBuffer);
+                const result = new ComplexAudioObject(this.__audioBuffer);
+                this.__audioBuffer = [];
+                return result;
             }
         }
         return;
