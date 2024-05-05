@@ -197,4 +197,23 @@ export const styles = StyleSheet.create({
         width: 64,
         height: 64,
     },
+    audioMessageContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#e1f5fe', // Light blue background for the audio message container
+        borderRadius: 20,
+        padding: 10,
+        marginVertical: 5,
+    },
+    playPauseIcon: {
+        width: 30,
+        height: 30,
+        marginRight: 10, // Space between the icon and the progress bar
+    },
+    progressBar: {
+        flex: 1,
+        height: 20, // Height of the progress bar
+        borderRadius: 10, // Rounded corners for the progress bar
+        backgroundColor: '#ddd', // Background color of the progress bar track
+    },
 });
