@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-native-async-storage/async-storage": "^1.22.3",
     "@react-native-community/cli": "^12.3.6",
+    "@react-native-community/slider": "^4.5.2",
     "@react-native-picker/picker": "^2.6.1",
     "@react-navigation/bottom-tabs": "^6.5.20",
     "@react-navigation/native": "^6.1.14",
@@ -39,7 +40,7 @@
     "react-native-sound-player": "^0.13.2",
     "react-native-vector-icons": "^10.0.3",
     "react-native-websocket": "^1.0.2",
-    "react-redux": "^9.1.0",
+    "react-redux": "^9.1.2",
     "redux": "^5.0.1",
     "yarn": "^1.22.22"
   },
