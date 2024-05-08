@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { View, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { WebSocketManager } from '../utils/WebSocketManager.tsx';
 import { AudioManagerAPI } from '../utils/AudioManager.tsx';
-import { ComplexAudioObject } from "../utils/ComplexAudio.tsx";
+import { ComplexAudioObject } from '../utils/ComplexAudio.tsx';
 import { SessionManager } from '../utils/SessionManager.tsx';
 import { styles } from '../styles/styels.tsx';
 import { AudioMessage } from './AudioMessage.tsx';
