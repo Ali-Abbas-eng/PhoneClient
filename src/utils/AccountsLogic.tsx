@@ -51,7 +51,6 @@ export const __tokenAuthentication = async () => {
 };
 
 export const __handleServerAccessError = (error: unknown) => {
-    console.log(error);
     const axiosError = error as AxiosError;
     let errorMessage;
 
@@ -76,14 +75,14 @@ export const __handleServerAccessError = (error: unknown) => {
         Alert.alert(
             'Error',
             errorMessage,
-            [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+            [{ text: 'OK', onPress: () => {} }],
             { cancelable: false },
         );
     } catch (_) {
         Alert.alert(
             'Error',
             'Unknown Error',
-            [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+            [{ text: 'OK', onPress: () => {} }],
             { cancelable: false },
         );
     }

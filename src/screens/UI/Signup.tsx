@@ -33,7 +33,6 @@ export const Signup = () => {
             confirmPassword,
             phoneNumber,
         ).then((response: any) => {
-            console.log(`Response from __handleSignUp was: ${response}`);
             if (response) {
                 navigation.reset({
                     index: 0,

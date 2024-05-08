@@ -1,6 +1,7 @@
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { ScreenNames } from './constants.tsx';
+import { ComplexAudioObject } from '../utils/ComplexAudio.tsx';
 
 export interface Session {
     id: number;
@@ -48,4 +49,14 @@ export type LanguageCardProps = {
     image_url?: string;
     sessions: Session[];
     onPress: () => void;
+};
+
+export type AudioMessageProps = {
+    audioObject: ComplexAudioObject;
+};
+
+export type EchoResponse = {
+    audio: string;
+    answer_text: string;
+    response_text: string;
 };

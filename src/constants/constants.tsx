@@ -17,3 +17,18 @@ export const RefreshTokenEndpoint = ServerEndpoint + '/api/v1/token/refresh/';
 export const RegisterEndpoint = ServerEndpoint + '/api/v1/register/';
 export const GetSessionsListEndpoint = ServerEndpoint + '/chat_scenarios/';
 export const SocketIP = WsProtocol + ServerIP + '/';
+export enum Turns {
+    ECHO = 0,
+    USER = 1,
+    HOLD = 2,
+}
+
+export enum Events {
+    TURNS_CHANGE = 'turns change',
+}
+
+export enum Durations {
+    MIN_RECORD = 6,
+    MAX_RECORD = 10,
+    CHUNK_RECORD = 3,
+}

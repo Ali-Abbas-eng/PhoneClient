@@ -27,4 +27,3 @@ export const Setups: React.FC<SetupScreenProps> = ({ route }) => {
         </ScrollView>
     );
 };
-

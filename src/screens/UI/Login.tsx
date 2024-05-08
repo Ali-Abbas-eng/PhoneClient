@@ -9,9 +9,7 @@ import {
 } from 'react-native';
 import { styles } from '../../styles/styels.tsx';
 import { useNavigation } from '@react-navigation/native';
-import {
-    ScreenNames,
-} from '../../constants/constants.tsx';
+import { ScreenNames } from '../../constants/constants.tsx';
 import { __handleLogin } from '../Logic/Login.tsx';
 
 export const Login = () => {

@@ -26,9 +26,7 @@ export function Home({ navigation }: HomeScreenProps) {
                 setSessions(result.sessions);
                 setLoading(false);
             })
-            .catch(() => {
-                console.log('An Error Was Thrown');
-            });
+            .catch(() => {});
     }, [navigation]); // include all dependencies here
 
     useEffect(() => {
